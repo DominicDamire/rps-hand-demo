@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Gun Grip · Camera Range</title>
+    <link rel="stylesheet" href="play.css?v=3" />
+    <script src="../vendor/qrcode.min.js"></script>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <header>
+      <a href="./?v=2">← Grip editor</a
+      ><strong>GUN GRIP <span>/ CAMERA RANGE</span></strong
+      ><span class="version">04</span>
+    </header>
+    <main>
+      <section class="stage">
+        <canvas id="scene" aria-label="Gun pickup and shooting range"></canvas>
+        <div class="top">
+          <span id="state">YOUR SAVED GRIP</span
+          ><span id="score">0 shots · 0 hits</span>
+        </div>
+        <div id="crosshair">+</div>
+        <div id="aim" hidden aria-hidden="true"></div>
+        <output id="shotFeedback" aria-live="polite"></output>
+        <div class="instructions">
+          <h1>One hand. Your grip.</h1>
+          <p id="notice" role="status">Loading your hand placement…</p>
+        </div>
+        <div class="meters">
+          <label
+            >INDEX <meter id="indexMeter" min="0" max="1" value="0"></meter
+            ><output id="indexValue">0%</output></label
+          ><label
+            >THUMB <meter id="thumbMeter" min="0" max="1" value="1"></meter
+            ><output id="thumbValue">100%</output></label
+          >
+        </div>
+      </section>
+      <aside>
+        <section>
+          <h2>Pick up & shoot</h2>
+          <p>
+            Close the middle, ring and little fingers to pick up. Keep them
+            curled to hold. Bend your index to shoot; straighten to rearm. Open
+            the three lower fingers to put the gun back.
+          </p>
+          <button id="phone" class="primary" disabled>
+            Connect phone via QR
+          </button>
+          <p>
+            Scan on your phone and tap Start camera. Keep its camera page open;
+            hand tracking controls this range.
+          </p>
+          <button id="start" disabled>Connect PC camera</button
+          ><button id="stop" disabled>Stop camera</button
+          ><label
+            >Camera<select id="camera">
+              <option value="">Default camera</option>
+            </select></label
+          ><label
+            >Hand selection<select id="selection">
+              <option value="auto">One visible hand (automatic)</option>
+              <option value="Right">Tracker label: Right</option>
+              <option value="Left">Tracker label: Left</option>
+            </select></label
+          ><video id="video" muted playsinline hidden></video
+          ><canvas
+            id="preview"
+            width="320"
+            height="240"
+            aria-label="Mirrored camera and hand landmarks"
+          ></canvas>
+          <p id="tracking">Camera off</p>
+          <p>
+            Thumb not reaching both stops? Hold your thumb raised and capture
+            it, then wrap it and capture again. Keep your hand visible.
+          </p>
+          <button id="thumb-raised">Set thumb raised</button>
+          <button id="thumb-wrapped">Set thumb wrapped</button>
+          <button id="thumb-default">Reset thumb tracking</button>
+          <p id="thumbCalibration" role="status">
+            Thumb follows your palm-relative movement.
+          </p>
+          <button id="center">Center held orientation</button
+          ><label class="check"
+            ><input id="rotation" type="checkbox" checked /> Follow palm
+            rotation</label
+          ><label class="check"
+            ><input id="sound" type="checkbox" checked /> Shot sound</label
+          ><label
+            >Movement sensitivity
+            <input id="gain" type="range" min=".3" max="2" step=".1" value="1"
+          /></label>
+        </section>
+        <section>
+          <h2>Five-target range</h2>
+          <p>
+            Aim the small dot with your hand. Bend your index for one shot, then
+            straighten it before firing again.
+          </p>
+          <ol id="targetScores" class="targetScores"></ol>
+          <p id="accuracy">Accuracy — · 0 / 5 targets hit</p>
+          <button id="rangeView">Show shooting range</button>
+          <button id="resetScore">Reset score</button>
+        </section>
+        <section>
+          <h2>Locked to your preset</h2>
+          <p id="profileName">JSON 2 released · JSON 4 pressed / thumb stop</p>
+          <p id="limits">
+            Lower three fingers fixed. Index maximum: −3° / 78° / 69°. Thumb
+            stays between your raised and wrapped poses.
+          </p>
+          <button id="reset">Use your supplied grip</button
+          ><button id="editor">Edit placement & limits</button>
+          <p>
+            The hand-to-gun placement stays fixed while you move. Tracking loss
+            pauses shooting and keeps the grip.
+          </p>
+        </section>
+        <section>
+          <h2>Inspect the limits</h2>
+          <p>Camera-free inspection of the same bounded poses.</p>
+          <button id="inspect">Inspect saved grip</button>
+          <div class="views">
+            <button data-view="front">Front</button
+            ><button data-view="side">Side</button
+            ><button data-view="back">Back</button>
+          </div>
+          <label
+            >Index pull<input
+              id="index"
+              type="range"
+              min="0"
+              max="1"
+              step=".01"
+              value="0" /></label
+          ><label
+            >Thumb inward bend<input
+              id="thumb"
+              type="range"
+              min="0"
+              max="1"
+              step=".01"
+              value="1" /></label
+          ><label class="check"
+            ><input id="ghost" type="checkbox" /> Transparent pistol</label
+          >
+          <p id="poseValues">Index: 0° / −3° / −19°</p>
+        </section>
+      </aside>
+    </main>
+    <script type="module" src="play.mjs?v=4"></script>
+  </body>
+</html>

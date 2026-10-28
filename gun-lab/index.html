@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="theme-color" content="#11181d" />
+    <title>Gun Grip Lab</title>
+    <link rel="stylesheet" href="lab.css?v=1" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <header>
+      <div class="brand">
+        <span class="logo">G / H</span>
+        <div>
+          <h1>Gun Grip Lab <small>02</small></h1>
+          <p>Placement, fingers & trigger tracking</p>
+        </div>
+      </div>
+      <nav>
+        <a href="play.html?v=4">Camera pickup &amp; shoot ↗</a>
+        <a href="../hand-touch-calibration/">Sweep ↗</a
+        ><a href="../hand-lab/">Hand lab ↗</a
+        ><a href="../movement/?v=90">Game ↗</a
+        ><button id="export">Export JSON</button>
+      </nav>
+    </header>
+    <div id="notice" role="status">Loading the sweep hand and pistol…</div>
+    <main>
+      <aside class="placement">
+        <section>
+          <div class="eyebrow">01 / PLACEMENT</div>
+          <h2>Fit the grip</h2>
+          <button id="useCamera" class="primary">
+            Use this grip with camera
+          </button>
+          <p>
+            Thumb up. Index toward the front camera. Three fingers curled. Edit
+            immediately; no camera required.
+          </p>
+          <label
+            >Model hand<select id="side">
+              <option value="R">Right hand</option>
+              <option value="L">Left hand</option>
+            </select></label
+          >
+          <div class="segmented">
+            <button id="editHand" aria-pressed="true">Hand</button
+            ><button id="editGun" aria-pressed="false">Gun</button>
+          </div>
+          <div id="transforms"></div>
+          <label class="check"
+            ><input type="checkbox" id="moveTogether" /> Move gun with
+            hand</label
+          >
+          <p>Enable after fitting to move the assembled grip together.</p>
+          <button id="resetPlacement">Reset selected placement</button>
+        </section>
+        <section>
+          <div class="eyebrow">02 / APPEARANCE</div>
+          <div id="appearance"></div>
+          <label class="check"
+            ><input type="checkbox" id="showGun" checked /> Show gun</label
+          ><label class="check"
+            ><input type="checkbox" id="ghostGun" /> Transparent gun</label
+          ><label class="check"
+            ><input type="checkbox" id="showJoints" /> Joint markers</label
+          ><label class="check"
+            ><input type="checkbox" id="showGrid" checked /> Reference
+            grid</label
+          >
+        </section>
+        <section>
+          <div class="eyebrow">PRESETS</div>
+          <label
+            >Preset name<input
+              id="presetName"
+              maxlength="80"
+              value="My gun grip"
+          /></label>
+          <div class="row">
+            <button id="save">Save in browser</button
+            ><button id="load">Load saved</button>
+          </div>
+          <button id="initial">Reset to supplied grip</button>
+          <details>
+            <summary>JSON backup / import</summary>
+            <textarea
+              id="json"
+              aria-label="Preset JSON"
+              rows="6"
+              spellcheck="false"
+            ></textarea
+            ><button id="import">Import pasted JSON</button>
+          </details>
+          <p id="saveStatus">
+            Save a grip here, or export it to use on another device.
+          </p>
+        </section>
+      </aside>
+      <section class="viewport">
+        <div class="toolbar">
+          <span class="pill" id="mode">POSE EDITOR</span>
+          <div class="views">
+            <button data-view="perspective" aria-pressed="true">Orbit</button
+            ><button data-view="front" aria-pressed="false">Front</button
+            ><button data-view="side" aria-pressed="false">Side</button
+            ><button data-view="top" aria-pressed="false">Top</button
+            ><button data-view="first" aria-pressed="false">
+              First person
+            </button>
+          </div>
+        </div>
+        <div class="scene-wrap">
+          <canvas
+            id="scene"
+            aria-label="Interactive gun and sweep hand"
+          ></canvas>
+          <div class="corner">SWEEP HAND <span>·</span> FIXED GRIP</div>
+          <div class="axis-key">
+            <span>X</span> <span>Y</span> <span>Z</span> / millimetres
+          </div>
+          <div class="view-help">
+            Drag to orbit · Right-drag to pan · Scroll to zoom<br />Use the
+            placement controls to move the hand or gun.
+          </div>
+        </div>
+        <div class="trigger-strip">
+          <span id="triggerState">TRIGGER / OFF</span
+          ><meter
+            id="triggerMeter"
+            min="0"
+            max="1"
+            value="0"
+            aria-label="Trigger pull"
+          ></meter
+          ><output id="pullValue">0%</output
+          ><span id="pressCount">0 presses</span>
+        </div>
+      </section>
+      <aside class="editor">
+        <section>
+          <div class="eyebrow">03 / FINGERS</div>
+          <h2>Shape every joint</h2>
+          <p>Select a finger and joint. All three axes remain editable.</p>
+          <div id="fingers" class="finger-tabs"></div>
+          <div id="joints" class="segmented"></div>
+          <h3 id="jointTitle">Index · MCP</h3>
+          <div id="angles"></div>
+          <div class="row">
+            <button id="straighten">Straighten finger</button
+            ><button id="curl">Curl finger</button>
+          </div>
+          <button id="resetJoint">Reset selected joint</button>
+        </section>
+        <section>
+          <div class="eyebrow">04 / LIVE TRIGGER</div>
+          <h2>Follow your index</h2>
+          <p>
+            The grip stays fixed. Only index bending follows your camera.
+            Release once to arm the press counter.
+          </p>
+          <label
+            >Tracking hand<select id="trackingHand">
+              <option value="Right">Tracker label: Right</option>
+              <option value="Left">Tracker label: Left</option>
+            </select></label
+          >
+          <p>Choose the label that matches your hand in the preview.</p>
+          <div class="row">
+            <button id="start" class="primary">Connect camera</button
+            ><button id="stop" disabled>Stop</button>
+          </div>
+          <video id="video" muted playsinline hidden></video
+          ><canvas
+            id="preview"
+            width="320"
+            height="240"
+            aria-label="Camera trigger tracking preview"
+          ></canvas>
+          <p id="trackingStatus">Camera off. No animation is playing.</p>
+          <div class="row">
+            <button id="captureReleased" disabled>Capture released</button
+            ><button id="capturePressed" disabled>Capture pressed</button>
+          </div>
+          <div id="triggerControls"></div>
+          <button id="clearCount">Clear press count</button>
+          <p>
+            Index bend uses 3D landmarks. A lost hand disarms the trigger;
+            release to rearm after reacquisition. Test your camera angle for
+            occlusion.
+          </p>
+        </section>
+      </aside>
+    </main>
+    <script type="module" src="lab.mjs?v=shared-phone1"></script>
+  </body>
+</html>

@@ -1,0 +1,23 @@
+body{background:#1c2b37}#scene{width:100vw;height:100dvh}.cross{width:22px;height:22px;transform:translate(-50%,-50%);background:none;opacity:1;filter:drop-shadow(0 1px 3px #000)}.cross:before,.cross:after{content:'';position:absolute;background:#e6fff1;border-radius:1px}.cross:before{width:22px;height:2px;left:0;top:10px}.cross:after{width:2px;height:22px;top:0;left:10px}
+#panel{position:fixed;left:16px;bottom:16px;transform:none;width:min(420px,calc(100vw - 32px));padding:0;overflow:hidden;z-index:4;background:#101b25ed}#panelBody{padding:14px 18px 18px;max-height:48dvh;overflow:auto}#panel.collapsed #panelBody{display:none}.dragbar{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid #ffffff16;user-select:none}.draghandle{flex:1;min-width:0;cursor:grab;touch-action:none;font-size:12px;color:#b8cbd0;padding:8px 2px}.draghandle:active{cursor:grabbing}.draghandle:focus-visible{outline:2px solid #b7e2c5}.dragbar button{font-size:11px;padding:7px 9px}.state{font-size:14px;margin-bottom:8px}#panel p{font-size:12px;margin-bottom:12px}#panel details{margin-top:12px}
+#preview{position:fixed;right:16px;top:105px;width:240px;border-radius:12px;overflow:hidden;border:1px solid #ffffff35;background:#101b25ec;z-index:3;box-shadow:0 8px 25px #0003}
+/* the two extra tracking boxes stack under the joystick one, same width, same look */
+#facePanel,#handsPanel{position:fixed;right:16px;width:240px;border-radius:12px;overflow:hidden;border:1px solid #ffffff35;background:#101b25ec;z-index:3;box-shadow:0 8px 25px #0003}
+/* anchored to the bottom, stacked upwards: the joystick panel above is draggable and can be any height, and these
+   must never land on top of it */
+#handsPanel{bottom:16px}
+#facePanel{bottom:calc(16px + 222px + 10px)}
+#facePanel .dragbar,#handsPanel .dragbar{padding:4px 8px;font-size:11px;color:#9fb3c8}
+.trackBox{position:relative;aspect-ratio:4/3;background:#182832}
+.trackBox canvas{position:absolute;inset:0;display:block;width:100%;height:100%}
+.trackBox div{position:absolute;left:8px;bottom:6px;font:11px system-ui,sans-serif;color:#9fb3c8;pointer-events:none}
+@media (max-height:760px){#facePanel,#handsPanel{width:190px}#handsPanel{bottom:12px}#facePanel{bottom:calc(12px + 176px + 8px)}}#preview[hidden]{display:none}#preview .dragbar{padding:4px 8px}#previewImage{position:relative;aspect-ratio:4/3;background:#182832}#cam{position:absolute;inset:0;width:100%;height:100%;opacity:1;object-fit:fill;transform:scaleX(-1)}#tracking{position:absolute;inset:0;display:block;width:100%;height:100%;pointer-events:none}#previewNote{position:absolute;inset:0;display:grid;place-content:center;text-align:center;font-size:12px;line-height:1.6;padding:12px;color:#c4d3d8;pointer-events:none}#previewNote[hidden]{display:none}#trackingLegend{font-size:10px;color:#c9d8d9;padding:7px 10px}.indexKey{color:#ffdf75}#viewTools{position:fixed;top:68px;right:16px;display:flex;gap:7px;z-index:5}#viewTools button{padding:7px 10px;font-size:11px;background:#172b37e6}header{top:20px;left:22px;right:22px}.label{letter-spacing:1.5px}#panel.collapsed{width:auto;min-width:240px;max-width:calc(100vw - 32px)}#error:empty{display:none}@media(max-width:600px){#preview{width:170px;top:102px}header{left:16px;right:16px;top:16px}.label{font-size:9px}#viewTools{top:65px}#panelBody{padding:12px 14px 14px;max-height:43dvh}#panel .row{gap:6px}#panel button,#panel select{font-size:12px;padding:9px 10px}#panel .dragbar button{padding:7px 9px}#trackingLegend{font-size:9px}.draghandle{font-size:11px}}
+header{text-shadow:0 1px 4px #000,0 0 12px #0008}#position{color:#fff}
+
+#preview{width:min(230px,38vw)}#previewImage{overflow:hidden;aspect-ratio:4/3}#handZoomState{position:absolute;top:8px;left:8px;right:8px;z-index:2;pointer-events:none;text-align:center;font:bold 13px sans-serif;color:#fff;text-shadow:0 1px 4px #000;background:#0c1c27b8;border-radius:6px;padding:6px}#previewNote{z-index:3;background:#182832}#preview .draghandle{font-size:12px}@media(max-width:600px){#preview{width:min(190px,48vw);right:12px;top:102px}}
+
+#handZoomState{top:auto;bottom:3px;left:3px;right:3px;font-size:10px;padding:3px}#preview .draghandle{font-size:10px}#trackingLegend{display:none}
+
+#panel{backdrop-filter:none}
+
+#fingerPanel{padding:8px;background:#142531;border-top:1px solid #ffffff25}.fingerTitle{font-size:11px;color:#c4d3d8;margin-bottom:6px}.fingerChoices{display:flex;gap:5px}.fingerChoices button{flex:1;padding:9px 3px;font-size:11px}.fingerChoices button[aria-pressed=true]{background:#c4edcf;color:#10251a;border-color:#c4edcf}#fingerHelp{font-size:10px;line-height:1.4;color:#c4d3d8;margin-top:7px}

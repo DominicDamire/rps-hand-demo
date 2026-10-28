@@ -1,0 +1,43 @@
+<!doctype html><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js"}}</script><pre>Loading</pre><script type="module">
+import * as T from 'three';import {DollRig} from '../doll/DollRig.js';import {buildTips} from './contact.mjs';import {directDriver} from './direct.mjs?v=touch2.4';import {OuterCollision} from './outer-collision.mjs?v=touch2.4';import {convexPenetration} from './convex-contact.mjs';
+try{
+ const rig=new DollRig(new T.Scene(),{url:new URL('../doll.glb',location).href,report:new URL('../doll-report.json',location).href});await rig.ready;
+ const tips=buildTips(rig),names=['Thumb','Index','Middle','Ring','Pinky'],runs={L:directDriver(rig,tips),R:directDriver(rig,tips)};let lockError=0,bendError=0,lengthError=0,openError=0;
+ function pose(side,bend,spread,q,fold=0){const root=new T.Vector3(0,0,-.6),p=[root],across=rig.rest[side+'Index1'].world.clone().sub(rig.rest[side+'Pinky1'].world);
+  for(const f of names){const name=side+f,base=rig.rest[name+'1'].world.clone().sub(rig.rest[side+'Hand'].world).applyQuaternion(q).add(root),forward=rig.rest[name+'2'].world.clone().sub(rig.rest[name+'1'].world).normalize(),x=across.clone().addScaledVector(forward,-across.dot(forward)).normalize(),z=new T.Vector3().crossVectors(x,forward),a=(f==='Thumb'?0:bend)*Math.PI/180,b=(f==='Thumb'?0:spread)*Math.PI/180,dir=forward.clone().multiplyScalar(Math.cos(a)*Math.cos(b)).addScaledVector(z,Math.sin(a)*Math.cos(b)).addScaledVector(x,Math.sin(b)).applyQuaternion(q);p.push(base);
+   for(let k=1;k<=3;k++){const len=k<3?rig.rest[name+(k+1)].world.distanceTo(rig.rest[name+k].world):tips[name].length();const segment=dir.clone();if(k>1&&f!=='Thumb')segment.applyAxisAngle(x.clone().applyQuaternion(q),fold*Math.PI/180);p.push(p[p.length-1].clone().addScaledVector(segment,len));}}
+  return p;
+ }
+ for(const side of ['L','R'])for(const q of [new T.Quaternion(),new T.Quaternion().setFromEuler(new T.Euler(.3,.5,.2))])for(const bend of [0,60,70,85]){
+  const p=pose(side,bend,20,q),result=runs[side](p,side,q,.016,{noiseDegrees:0,lm:p.map(v=>({x:v.x,y:v.y})),width:480,height:480});
+  for(let f=1;f<5;f++){const name=side+names[f],i=1+f*4,forward=rig.rest[name+'2'].world.clone().sub(rig.rest[name+'1'].world).normalize(),across=rig.rest[side+'Index1'].world.clone().sub(rig.rest[side+'Pinky1'].world),x=across.addScaledVector(forward,-across.dot(forward)).normalize(),z=new T.Vector3().crossVectors(x,forward),dir=result.points[i+1].clone().sub(result.points[i]).normalize().applyQuaternion(q.clone().invert());
+   if(bend>=70)lockError=Math.max(lockError,Math.abs(dir.dot(x)));if(bend<=60)openError=Math.max(openError,Math.abs(dir.dot(x)-Math.sin(20*Math.PI/180)));
+   bendError=Math.max(bendError,Math.abs(Math.atan2(dir.dot(z),dir.dot(forward))*180/Math.PI-bend));
+   for(let k=0;k<3;k++)lengthError=Math.max(lengthError,Math.abs(result.points[i+k+1].distanceTo(result.points[i+k])-p[i+k+1].distanceTo(p[i+k])));
+  }
+ }
+ // Reproduce a fist: base below 70 degrees, upper joints curled, noisy base spread.
+ for(const side of ['L','R'])for(const q of [new T.Quaternion(),new T.Quaternion().setFromEuler(new T.Euler(.5,-.4,.3))])for(const spread of [-25,0,25]){
+  const p=pose(side,40,spread,q,90),result=runs[side](p,side,q,.016,{noiseDegrees:0,lm:p.map(v=>({x:v.x,y:v.y})),width:480,height:480});
+  for(let f=1;f<5;f++){const name=side+names[f],i=1+4*f,forward=rig.rest[name+'2'].world.clone().sub(rig.rest[name+'1'].world).normalize(),x=rig.rest[side+'Index1'].world.clone().sub(rig.rest[side+'Pinky1'].world);x.addScaledVector(forward,-x.dot(forward)).normalize();
+   const dir=result.points[i+1].clone().sub(result.points[i]).normalize().applyQuaternion(q.clone().invert());lockError=Math.max(lockError,Math.abs(dir.dot(x)));
+  }
+ }
+ for(const side of ['L','R']){const p=pose(side,0,0,new T.Quaternion());runs[side](p,side,new T.Quaternion(),.016,{noiseDegrees:0,lm:p.map(v=>({x:v.x,y:v.y})),width:480,height:480});}
+ const collision=new OuterCollision(),shift=(side,d)=>{const node=rig.joints[side+'Hand'],p=node.getWorldPosition(new T.Vector3()).add(d);node.position.copy(node.parent.worldToLocal(p));node.updateWorldMatrix(false,true);};
+ collision.resolve(null,rig,{L:true,R:true},shift,false,'1:0',{head:false,hands:true});
+ const world=h=>{h.node.updateWorldMatrix(true,false);const normal=new T.Matrix3().getNormalMatrix(h.node.matrixWorld);return {vertices:h.vertices.map(v=>v.clone().applyMatrix4(h.node.matrixWorld).toArray()),normals:h.normals.map(v=>v.clone().applyMatrix3(normal).normalize().toArray())};};
+ let remaining=0;for(const a of collision.hand.L)for(const b of collision.hand.R)remaining=Math.max(remaining,convexPenetration(world(a),world(b))?.depth||0);
+ // Isolated collision regression: touching the head must not move the other hand.
+ const block=(x,r)=>{const node=new T.Object3D();node.position.x=x;node.updateMatrixWorld(true);return {node,vertices:[-r,r].flatMap(a=>[-r,r].flatMap(b=>[-r,r].map(c=>new T.Vector3(a,b,c)))),normals:[new T.Vector3(1,0,0),new T.Vector3(0,1,0),new T.Vector3(0,0,1)]};};
+ const normalTest=new OuterCollision(),left=block(.13,.04),right=block(.5,.04),headBlock=block(0,.1);
+ normalTest.shape='isolated';normalTest.hand={L:[left],R:[right]};normalTest.head=[headBlock];
+ const pushes={L:new T.Vector3(),R:new T.Vector3()},move=(side,d)=>{pushes[side].add(d);normalTest.hand[side][0].node.position.add(d);};
+ normalTest.resolve({group:{visible:true}},null,{L:true,R:true},move,true,'isolated',{head:true,hands:false});
+ const normalOnly=pushes.L.x>0&&Math.abs(pushes.L.y)+Math.abs(pushes.L.z)<1e-10&&pushes.R.length()<1e-10;
+ const beforeSlide=left.node.position.x;left.node.position.y+=.02;
+ normalTest.resolve({group:{visible:true}},null,{L:true,R:true},move,true,'isolated',{head:true,hands:false});
+ const freeSlide=Math.abs(left.node.position.y-.02)<1e-10&&Math.abs(left.node.position.x-beforeSlide)<1e-10;
+ document.querySelector('pre').textContent=JSON.stringify({pass:normalOnly&&freeSlide&&lockError<1e-8&&bendError<1e-6&&lengthError<1e-8&&openError<1e-8&&collision.last.hands>0&&remaining<.001,normalOnly,freeSlide,lockError,bendError,lengthError,openError,handCollisions:collision.last.hands,remainingPenetrationMm:remaining*1000});
+}catch(e){document.querySelector('pre').textContent=e.stack;}
+</script>

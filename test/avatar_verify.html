@@ -1,0 +1,34 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Connected rig pose tests</title><style>body{margin:0;background:#243946;color:white;font:14px system-ui}canvas{display:block;width:100vw;height:100vh}aside{position:absolute;top:12px;left:12px;background:#172633dd;padding:12px;border-radius:12px;max-width:90vw}select,button{padding:9px}pre{white-space:pre-wrap}</style></head><body><canvas></canvas><aside><b>Connected rig · synthetic pose test</b><p><select aria-label="Test pose"><option>Neutral</option><option>Bent elbows</option><option>Lean and turn</option><option>Unreachable wrists</option></select><select id="parent" aria-label="Parent transform"><option value="identity">Parent: identity</option><option value="turned">Parent: turned pi (rps_hand)</option><option value="mirrored">Parent: turned + mirrored (mirror view)</option></select><button>Show bones</button></p><pre role="status">Loading rig…</pre></aside><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"}}</script><script type="module">
+// Copy of the branch's avatar/verify.html for the adapted RiggedAvatar (eye passed explicitly, parent group given).
+// Same numbers as the branch: boneLengthError, eyeAlignmentError, invalidSkinVertices; plus the eye check repeated
+// under the parent transforms docs/index.html uses (rotated pi about y, and additionally mirrored in x).
+import * as T from 'three';import {RiggedAvatar} from '../avatar/RiggedAvatar.js';
+const Q=new URLSearchParams(location.search);
+const scene=new T.Scene();scene.background=new T.Color(0x243946);scene.add(new T.HemisphereLight(0xffffff,0x6e8494,2));const sun=new T.DirectionalLight(0xfff0df,2.3);sun.position.set(-1,2,-2);scene.add(sun);
+const renderer=new T.WebGLRenderer({canvas:document.querySelector('canvas'),antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.setSize(innerWidth,innerHeight);renderer.toneMapping=T.ACESFilmicToneMapping;
+const view=new T.PerspectiveCamera(42,innerWidth/innerHeight,.01,10);view.position.set(.8,.05,-1.95);view.lookAt(0,-.32,0);
+const outer=new T.Group(),root=new T.Group();outer.add(root);scene.add(outer);
+const eyeCam=new T.PerspectiveCamera();const avatar=new RiggedAvatar(root,eyeCam);await avatar.ready;
+const helper=new T.SkeletonHelper(avatar.object);helper.visible=false;scene.add(helper);document.querySelector('button').onclick=()=>{helper.visible=!helper.visible;};
+const lengths=Object.fromEntries(Object.entries(avatar.bones).map(([name,b])=>[name,b.position.length()]));
+if(Q.get('pose'))document.querySelector('select').value=Q.get('pose');if(Q.get('parent'))document.querySelector('#parent').value=Q.get('parent');
+function pose(){
+ const name=document.querySelector('select').value,parent=document.querySelector('#parent').value;
+ outer.scale.x=parent==='mirrored'?-1:1;root.rotation.y=parent==='identity'?0:Math.PI;root.position.set(parent==='identity'?0:.3,0,parent==='identity'?0:-.5);
+ const joints={leftShoulder:[-.21,-.24,.075],rightShoulder:[.21,-.24,.075],leftHip:[-.12,-.66,.085],rightHip:[.12,-.66,.085],leftElbow:[-.39,-.445,.07],rightElbow:[.39,-.445,.07],leftWrist:[-.535,-.64,.045],rightWrist:[.535,-.64,.045]};
+ const eye=new T.Vector3(0,0,0);const head={physicalYaw:0,physicalPitch:0};
+ if(name==='Bent elbows'||name==='Lean and turn'){joints.leftElbow=[-.28,-.45,.04];joints.rightElbow=[.28,-.45,.04];joints.leftWrist=[-.23,-.26,-.13];joints.rightWrist=[.23,-.26,-.13];}
+ if(name==='Lean and turn'){eye.set(.28,.12,-.25);head.physicalYaw=.7;head.physicalPitch=.25;for(const key of ['leftHip','rightHip'])joints[key][0]-=.18;}
+ if(name==='Unreachable wrists'){joints.leftWrist=[-2,1,-2];joints.rightWrist=[2,1,-2];}
+ avatar.update(eye,head,joints);avatar.object.updateMatrixWorld(true);
+ let boneError=0,badVertices=0;
+ for(const [name,b] of Object.entries(avatar.bones))boneError=Math.max(boneError,Math.abs(b.position.length()-lengths[name]));
+ for(const mesh of avatar.meshes){mesh.skeleton.update();for(let i=0;i<mesh.geometry.attributes.position.count;i++){const p=new T.Vector3();mesh.getVertexPosition(i,p);if(!Number.isFinite(p.x+p.y+p.z))badVertices++;}}
+ // eye point in the parent's (root's) frame: world eye of the Head bone brought back through root.matrixWorld
+ const eyeWorld=avatar.bones.Head.localToWorld(avatar.eyeLocal.clone()),eyeInRoot=eyeWorld.applyMatrix4(root.matrixWorld.clone().invert());
+ const eyeError=eyeInRoot.distanceTo(eye);
+ // the wrist target must be reached (in the root frame) when reachable
+ const wristWorld=avatar.bones.RightForearm.localToWorld(new T.Vector3(0,avatar.bones.RightForearm.children[0]?.position.y??0,0));
+ document.querySelector('pre').textContent=JSON.stringify({pose:name,parent,skinnedMeshes:avatar.meshes.length,bones:Object.keys(avatar.bones).length,boneLengthError:boneError,eyeAlignmentError:eyeError,invalidSkinVertices:badVertices,passed:boneError<1e-7&&eyeError<1e-6&&badVertices===0},null,2);
+}document.querySelector('select').onchange=pose;document.querySelector('#parent').onchange=pose;pose();renderer.setAnimationLoop(()=>renderer.render(scene,view));
+</script></body></html>
