@@ -1,0 +1,2042 @@
+{
+ "source": "Ball Joint Doll Rigged Basemesh.fbx",
+ "height_m": 1.75,
+ "target_height_m": 1.75,
+ "triangles": 44917,
+ "islands": 95,
+ "bones": 50,
+ "note": "rigid ball-joint parts hung on joint nodes; no skinning. Blender Z-up +Y forward exports as Y-up -Z forward.",
+ "measure": {
+  "arm_reach": 0.4698,
+  "upper_arm": 0.242,
+  "forearm": 0.2277,
+  "leg": 0.817,
+  "shoulder_width": 0.2932,
+  "shoulder_height": 1.4057,
+  "hip_height": 1.0449
+ },
+ "joints": {
+  "Root": {
+   "parent": null,
+   "rest": [
+    0.0,
+    0.0,
+    -0.0
+   ]
+  },
+  "Hips": {
+   "parent": "Root",
+   "rest": [
+    -0.0,
+    1.04495,
+    -0.04311
+   ]
+  },
+  "Waist": {
+   "parent": "Hips",
+   "rest": [
+    -0.0,
+    1.11908,
+    -0.05329
+   ]
+  },
+  "Chest": {
+   "parent": "Waist",
+   "rest": [
+    -0.0,
+    1.31062,
+    -0.03967
+   ]
+  },
+  "Neck": {
+   "parent": "Chest",
+   "rest": [
+    -0.0,
+    1.56478,
+    -0.00544
+   ]
+  },
+  "Head": {
+   "parent": "Neck",
+   "rest": [
+    -0.0,
+    1.60006,
+    -0.00544
+   ]
+  },
+  "LClavicle": {
+   "parent": "Chest",
+   "rest": [
+    -0.08068,
+    1.39435,
+    -0.00673
+   ]
+  },
+  "LUpperArm": {
+   "parent": "LClavicle",
+   "rest": [
+    -0.14659,
+    1.40572,
+    0.01708
+   ]
+  },
+  "LForearm": {
+   "parent": "LUpperArm",
+   "rest": [
+    -0.17311,
+    1.18482,
+    0.11234
+   ]
+  },
+  "LHand": {
+   "parent": "LForearm",
+   "rest": [
+    -0.22216,
+    0.96247,
+    0.11658
+   ]
+  },
+  "LThumb1": {
+   "parent": "LHand",
+   "rest": [
+    -0.22002,
+    0.89174,
+    0.08444
+   ]
+  },
+  "LThumb2": {
+   "parent": "LThumb1",
+   "rest": [
+    -0.21339,
+    0.85963,
+    0.07438
+   ]
+  },
+  "LThumb3": {
+   "parent": "LThumb2",
+   "rest": [
+    -0.20843,
+    0.83651,
+    0.06889
+   ]
+  },
+  "LIndex1": {
+   "parent": "LHand",
+   "rest": [
+    -0.24773,
+    0.83671,
+    0.08266
+   ]
+  },
+  "LIndex2": {
+   "parent": "LIndex1",
+   "rest": [
+    -0.24924,
+    0.80701,
+    0.08545
+   ]
+  },
+  "LIndex3": {
+   "parent": "LIndex2",
+   "rest": [
+    -0.2496,
+    0.78541,
+    0.0874
+   ]
+  },
+  "LMiddle1": {
+   "parent": "LHand",
+   "rest": [
+    -0.24979,
+    0.8345,
+    0.10374
+   ]
+  },
+  "LMiddle2": {
+   "parent": "LMiddle1",
+   "rest": [
+    -0.25112,
+    0.80017,
+    0.10481
+   ]
+  },
+  "LMiddle3": {
+   "parent": "LMiddle2",
+   "rest": [
+    -0.2514,
+    0.77581,
+    0.1056
+   ]
+  },
+  "LRing1": {
+   "parent": "LHand",
+   "rest": [
+    -0.25075,
+    0.83636,
+    0.12428
+   ]
+  },
+  "LRing2": {
+   "parent": "LRing1",
+   "rest": [
+    -0.25199,
+    0.80637,
+    0.1231
+   ]
+  },
+  "LRing3": {
+   "parent": "LRing2",
+   "rest": [
+    -0.25218,
+    0.78465,
+    0.12259
+   ]
+  },
+  "LPinky1": {
+   "parent": "LHand",
+   "rest": [
+    -0.25126,
+    0.84006,
+    0.14488
+   ]
+  },
+  "LPinky2": {
+   "parent": "LPinky1",
+   "rest": [
+    -0.25254,
+    0.81382,
+    0.14185
+   ]
+  },
+  "LPinky3": {
+   "parent": "LPinky2",
+   "rest": [
+    -0.25324,
+    0.79224,
+    0.13918
+   ]
+  },
+  "LThigh": {
+   "parent": "Hips",
+   "rest": [
+    -0.04782,
+    0.9358,
+    -0.0411
+   ]
+  },
+  "LShin": {
+   "parent": "LThigh",
+   "rest": [
+    -0.07259,
+    0.56381,
+    -0.02011
+   ]
+  },
+  "LFoot": {
+   "parent": "LShin",
+   "rest": [
+    -0.0564,
+    0.12081,
+    -0.00453
+   ]
+  },
+  "RClavicle": {
+   "parent": "Chest",
+   "rest": [
+    0.08068,
+    1.39435,
+    -0.00673
+   ]
+  },
+  "RUpperArm": {
+   "parent": "RClavicle",
+   "rest": [
+    0.14659,
+    1.40572,
+    0.01708
+   ]
+  },
+  "RForearm": {
+   "parent": "RUpperArm",
+   "rest": [
+    0.17311,
+    1.18482,
+    0.11234
+   ]
+  },
+  "RHand": {
+   "parent": "RForearm",
+   "rest": [
+    0.22216,
+    0.96247,
+    0.11658
+   ]
+  },
+  "RThumb1": {
+   "parent": "RHand",
+   "rest": [
+    0.22002,
+    0.89174,
+    0.08444
+   ]
+  },
+  "RThumb2": {
+   "parent": "RThumb1",
+   "rest": [
+    0.21339,
+    0.85963,
+    0.07438
+   ]
+  },
+  "RThumb3": {
+   "parent": "RThumb2",
+   "rest": [
+    0.20843,
+    0.83651,
+    0.06888
+   ]
+  },
+  "RIndex1": {
+   "parent": "RHand",
+   "rest": [
+    0.24773,
+    0.83671,
+    0.08266
+   ]
+  },
+  "RIndex2": {
+   "parent": "RIndex1",
+   "rest": [
+    0.24924,
+    0.80701,
+    0.08545
+   ]
+  },
+  "RIndex3": {
+   "parent": "RIndex2",
+   "rest": [
+    0.2496,
+    0.78541,
+    0.0874
+   ]
+  },
+  "RMiddle1": {
+   "parent": "RHand",
+   "rest": [
+    0.24979,
+    0.8345,
+    0.10374
+   ]
+  },
+  "RMiddle2": {
+   "parent": "RMiddle1",
+   "rest": [
+    0.25112,
+    0.80017,
+    0.10481
+   ]
+  },
+  "RMiddle3": {
+   "parent": "RMiddle2",
+   "rest": [
+    0.2514,
+    0.77581,
+    0.1056
+   ]
+  },
+  "RRing1": {
+   "parent": "RHand",
+   "rest": [
+    0.25075,
+    0.83636,
+    0.12428
+   ]
+  },
+  "RRing2": {
+   "parent": "RRing1",
+   "rest": [
+    0.25199,
+    0.80637,
+    0.1231
+   ]
+  },
+  "RRing3": {
+   "parent": "RRing2",
+   "rest": [
+    0.25218,
+    0.78465,
+    0.12259
+   ]
+  },
+  "RPinky1": {
+   "parent": "RHand",
+   "rest": [
+    0.25126,
+    0.84006,
+    0.14488
+   ]
+  },
+  "RPinky2": {
+   "parent": "RPinky1",
+   "rest": [
+    0.25254,
+    0.81382,
+    0.14185
+   ]
+  },
+  "RPinky3": {
+   "parent": "RPinky2",
+   "rest": [
+    0.25324,
+    0.79224,
+    0.13918
+   ]
+  },
+  "RThigh": {
+   "parent": "Hips",
+   "rest": [
+    0.04782,
+    0.9358,
+    -0.0411
+   ]
+  },
+  "RShin": {
+   "parent": "RThigh",
+   "rest": [
+    0.07258,
+    0.56381,
+    -0.02011
+   ]
+  },
+  "RFoot": {
+   "parent": "RShin",
+   "rest": [
+    0.0564,
+    0.12081,
+    -0.00453
+   ]
+  }
+ },
+ "parts": [
+  {
+   "node": "Chest__chest__4",
+   "family": "chest",
+   "side": "",
+   "bone": "Chest",
+   "tris": 1169,
+   "centre": [
+    -0.0,
+    0.0369,
+    1.4246
+   ],
+   "size": [
+    0.2452,
+    0.2499,
+    0.3366
+   ]
+  },
+  {
+   "node": "Chest__chest__7",
+   "family": "chest",
+   "side": "",
+   "bone": "Chest",
+   "tris": 716,
+   "centre": [
+    -0.0,
+    -0.0103,
+    1.4176
+   ],
+   "size": [
+    0.2107,
+    0.0831,
+    0.0831
+   ]
+  },
+  {
+   "node": "Chest__chest__8",
+   "family": "chest",
+   "side": "",
+   "bone": "Chest",
+   "tris": 600,
+   "centre": [
+    -0.0807,
+    0.0067,
+    1.3944
+   ],
+   "size": [
+    0.0802,
+    0.1464,
+    0.1577
+   ]
+  },
+  {
+   "node": "Chest__chest__9",
+   "family": "chest",
+   "side": "",
+   "bone": "Chest",
+   "tris": 600,
+   "centre": [
+    0.0807,
+    0.0067,
+    1.3944
+   ],
+   "size": [
+    0.0802,
+    0.1464,
+    0.1577
+   ]
+  },
+  {
+   "node": "Chest__chest__6",
+   "family": "chest",
+   "side": "",
+   "bone": "Chest",
+   "tris": 558,
+   "centre": [
+    -0.0,
+    0.0054,
+    1.5858
+   ],
+   "size": [
+    0.0414,
+    0.0439,
+    0.07
+   ]
+  },
+  {
+   "node": "Chest__chest__5",
+   "family": "chest",
+   "side": "",
+   "bone": "Chest",
+   "tris": 258,
+   "centre": [
+    -0.0,
+    0.0583,
+    1.2875
+   ],
+   "size": [
+    0.0783,
+    0.0811,
+    0.0998
+   ]
+  },
+  {
+   "node": "Head__head__34",
+   "family": "head",
+   "side": "",
+   "bone": "Head",
+   "tris": 890,
+   "centre": [
+    -0.0,
+    0.017,
+    1.6322
+   ],
+   "size": [
+    0.1593,
+    0.199,
+    0.2355
+   ]
+  },
+  {
+   "node": "Hips__hip__35",
+   "family": "hip",
+   "side": "",
+   "bone": "Hips",
+   "tris": 1420,
+   "centre": [
+    -0.0,
+    0.0431,
+    1.0449
+   ],
+   "size": [
+    0.262,
+    0.227,
+    0.2178
+   ]
+  },
+  {
+   "node": "LClavicle__clavicleKnot__10",
+   "family": "clavicleKnot",
+   "side": "L",
+   "bone": "LClavicle",
+   "tris": 340,
+   "centre": [
+    -0.093,
+    -0.0103,
+    1.4176
+   ],
+   "size": [
+    0.0603,
+    0.0499,
+    0.0499
+   ]
+  },
+  {
+   "node": "LClavicle__clavicleKnot__11",
+   "family": "clavicleKnot",
+   "side": "L",
+   "bone": "LClavicle",
+   "tris": 200,
+   "centre": [
+    -0.1336,
+    -0.0112,
+    1.418
+   ],
+   "size": [
+    0.0453,
+    0.0526,
+    0.0713
+   ]
+  },
+  {
+   "node": "LFoot__foot__16",
+   "family": "foot",
+   "side": "L",
+   "bone": "LFoot",
+   "tris": 844,
+   "centre": [
+    -0.0622,
+    0.0464,
+    0.0581
+   ],
+   "size": [
+    0.0685,
+    0.1767,
+    0.1161
+   ]
+  },
+  {
+   "node": "LFoot__foot__17",
+   "family": "foot",
+   "side": "L",
+   "bone": "LFoot",
+   "tris": 506,
+   "centre": [
+    -0.0564,
+    0.0045,
+    0.1208
+   ],
+   "size": [
+    0.0413,
+    0.0411,
+    0.0698
+   ]
+  },
+  {
+   "node": "LForearm__elbow__14",
+   "family": "elbow",
+   "side": "L",
+   "bone": "LForearm",
+   "tris": 978,
+   "centre": [
+    -0.1731,
+    -0.1123,
+    1.1848
+   ],
+   "size": [
+    0.0613,
+    0.0861,
+    0.1027
+   ]
+  },
+  {
+   "node": "LForearm__foreArm__20",
+   "family": "foreArm",
+   "side": "L",
+   "bone": "LForearm",
+   "tris": 924,
+   "centre": [
+    -0.1972,
+    -0.1192,
+    1.0644
+   ],
+   "size": [
+    0.1104,
+    0.0852,
+    0.2308
+   ]
+  },
+  {
+   "node": "LForearm__foreArm__21",
+   "family": "foreArm",
+   "side": "L",
+   "bone": "LForearm",
+   "tris": 330,
+   "centre": [
+    -0.1832,
+    -0.118,
+    1.1425
+   ],
+   "size": [
+    0.0354,
+    0.0524,
+    0.0678
+   ]
+  },
+  {
+   "node": "LHand__palm__54",
+   "family": "palm",
+   "side": "L",
+   "bone": "LHand",
+   "tris": 582,
+   "centre": [
+    -0.2364,
+    -0.1136,
+    0.8793
+   ],
+   "size": [
+    0.0516,
+    0.082,
+    0.0873
+   ]
+  },
+  {
+   "node": "LHand__forearmKnot__27",
+   "family": "forearmKnot",
+   "side": "L",
+   "bone": "LHand",
+   "tris": 576,
+   "centre": [
+    -0.2314,
+    -0.1146,
+    0.9294
+   ],
+   "size": [
+    0.0137,
+    0.0506,
+    0.0115
+   ]
+  },
+  {
+   "node": "LHand__palm__55",
+   "family": "palm",
+   "side": "L",
+   "bone": "LHand",
+   "tris": 512,
+   "centre": [
+    -0.2323,
+    -0.1146,
+    0.9288
+   ],
+   "size": [
+    0.0214,
+    0.0269,
+    0.0203
+   ]
+  },
+  {
+   "node": "LHand__forearmKnot__24",
+   "family": "forearmKnot",
+   "side": "L",
+   "bone": "LHand",
+   "tris": 324,
+   "centre": [
+    -0.2222,
+    -0.1166,
+    0.9625
+   ],
+   "size": [
+    0.0413,
+    0.0413,
+    0.0516
+   ]
+  },
+  {
+   "node": "LHand__forearmKnot__28",
+   "family": "forearmKnot",
+   "side": "L",
+   "bone": "LHand",
+   "tris": 192,
+   "centre": [
+    -0.2281,
+    -0.1152,
+    0.9456
+   ],
+   "size": [
+    0.0194,
+    0.0356,
+    0.0119
+   ]
+  },
+  {
+   "node": "LHand__forearmKnot__25",
+   "family": "forearmKnot",
+   "side": "L",
+   "bone": "LHand",
+   "tris": 160,
+   "centre": [
+    -0.2314,
+    -0.1325,
+    0.9355
+   ],
+   "size": [
+    0.027,
+    0.012,
+    0.0354
+   ]
+  },
+  {
+   "node": "LHand__forearmKnot__26",
+   "family": "forearmKnot",
+   "side": "L",
+   "bone": "LHand",
+   "tris": 160,
+   "centre": [
+    -0.2278,
+    -0.0974,
+    0.9362
+   ],
+   "size": [
+    0.027,
+    0.0121,
+    0.0354
+   ]
+  },
+  {
+   "node": "LIndex1__indexRoot__40",
+   "family": "indexRoot",
+   "side": "L",
+   "bone": "LIndex1",
+   "tris": 366,
+   "centre": [
+    -0.2483,
+    -0.0834,
+    0.8224
+   ],
+   "size": [
+    0.0171,
+    0.0194,
+    0.0427
+   ]
+  },
+  {
+   "node": "LIndex1__indexKnot__38",
+   "family": "indexKnot",
+   "side": "L",
+   "bone": "LIndex1",
+   "tris": 256,
+   "centre": [
+    -0.2477,
+    -0.0827,
+    0.8367
+   ],
+   "size": [
+    0.0158,
+    0.0062,
+    0.0159
+   ]
+  },
+  {
+   "node": "LIndex2__inderMid__36",
+   "family": "inderMid",
+   "side": "L",
+   "bone": "LIndex2",
+   "tris": 380,
+   "centre": [
+    -0.2499,
+    -0.0869,
+    0.7963
+   ],
+   "size": [
+    0.0146,
+    0.0166,
+    0.0337
+   ]
+  },
+  {
+   "node": "LIndex3__indexTip__42",
+   "family": "indexTip",
+   "side": "L",
+   "bone": "LIndex3",
+   "tris": 274,
+   "centre": [
+    -0.2494,
+    -0.0878,
+    0.7765
+   ],
+   "size": [
+    0.0141,
+    0.0148,
+    0.03
+   ]
+  },
+  {
+   "node": "LMiddle1__middleRoot__50",
+   "family": "middleRoot",
+   "side": "L",
+   "bone": "LMiddle1",
+   "tris": 364,
+   "centre": [
+    -0.2502,
+    -0.1038,
+    0.8178
+   ],
+   "size": [
+    0.017,
+    0.0181,
+    0.0471
+   ]
+  },
+  {
+   "node": "LMiddle1__middleKnot__46",
+   "family": "middleKnot",
+   "side": "L",
+   "bone": "LMiddle1",
+   "tris": 256,
+   "centre": [
+    -0.2498,
+    -0.1037,
+    0.8345
+   ],
+   "size": [
+    0.0158,
+    0.0054,
+    0.0159
+   ]
+  },
+  {
+   "node": "LMiddle2__middleMid__48",
+   "family": "middleMid",
+   "side": "L",
+   "bone": "LMiddle2",
+   "tris": 380,
+   "centre": [
+    -0.2517,
+    -0.1055,
+    0.788
+   ],
+   "size": [
+    0.0146,
+    0.0158,
+    0.0363
+   ]
+  },
+  {
+   "node": "LMiddle3__middleTip__52",
+   "family": "middleTip",
+   "side": "L",
+   "bone": "LMiddle3",
+   "tris": 274,
+   "centre": [
+    -0.2512,
+    -0.1057,
+    0.7668
+   ],
+   "size": [
+    0.0141,
+    0.0147,
+    0.0299
+   ]
+  },
+  {
+   "node": "LPinky1__pinkyRoot__62",
+   "family": "pinkyRoot",
+   "side": "L",
+   "bone": "LPinky1",
+   "tris": 362,
+   "centre": [
+    -0.2517,
+    -0.1438,
+    0.8275
+   ],
+   "size": [
+    0.0168,
+    0.0201,
+    0.0392
+   ]
+  },
+  {
+   "node": "LPinky1__pinkyKnot__58",
+   "family": "pinkyKnot",
+   "side": "L",
+   "bone": "LPinky1",
+   "tris": 256,
+   "centre": [
+    -0.2513,
+    -0.1449,
+    0.8401
+   ],
+   "size": [
+    0.0158,
+    0.0067,
+    0.016
+   ]
+  },
+  {
+   "node": "LPinky2__pinkyMid__60",
+   "family": "pinkyMid",
+   "side": "L",
+   "bone": "LPinky2",
+   "tris": 380,
+   "centre": [
+    -0.2532,
+    -0.1403,
+    0.803
+   ],
+   "size": [
+    0.0146,
+    0.0174,
+    0.0337
+   ]
+  },
+  {
+   "node": "LPinky3__pinkyTip__64",
+   "family": "pinkyTip",
+   "side": "L",
+   "bone": "LPinky3",
+   "tris": 274,
+   "centre": [
+    -0.2532,
+    -0.1385,
+    0.7857
+   ],
+   "size": [
+    0.0138,
+    0.0147,
+    0.0254
+   ]
+  },
+  {
+   "node": "LRing1__ringRoot__70",
+   "family": "ringRoot",
+   "side": "L",
+   "bone": "LRing1",
+   "tris": 362,
+   "centre": [
+    -0.2511,
+    -0.1237,
+    0.8218
+   ],
+   "size": [
+    0.0173,
+    0.018,
+    0.0426
+   ]
+  },
+  {
+   "node": "LRing1__ringKnot__66",
+   "family": "ringKnot",
+   "side": "L",
+   "bone": "LRing1",
+   "tris": 256,
+   "centre": [
+    -0.2508,
+    -0.1243,
+    0.8364
+   ],
+   "size": [
+    0.0158,
+    0.0052,
+    0.0159
+   ]
+  },
+  {
+   "node": "LRing2__ringMid__68",
+   "family": "ringMid",
+   "side": "L",
+   "bone": "LRing2",
+   "tris": 380,
+   "centre": [
+    -0.2526,
+    -0.1227,
+    0.7955
+   ],
+   "size": [
+    0.0144,
+    0.0159,
+    0.0337
+   ]
+  },
+  {
+   "node": "LRing3__ringTip__72",
+   "family": "ringTip",
+   "side": "L",
+   "bone": "LRing3",
+   "tris": 274,
+   "centre": [
+    -0.2518,
+    -0.1225,
+    0.7757
+   ],
+   "size": [
+    0.0141,
+    0.0146,
+    0.0299
+   ]
+  },
+  {
+   "node": "LShin__knee__44",
+   "family": "knee",
+   "side": "L",
+   "bone": "LShin",
+   "tris": 1012,
+   "centre": [
+    -0.0726,
+    0.0201,
+    0.5638
+   ],
+   "size": [
+    0.0554,
+    0.0944,
+    0.1155
+   ]
+  },
+  {
+   "node": "LShin__calf__0",
+   "family": "calf",
+   "side": "L",
+   "bone": "LShin",
+   "tris": 914,
+   "centre": [
+    -0.0772,
+    -0.0049,
+    0.3329
+   ],
+   "size": [
+    0.1035,
+    0.1203,
+    0.4272
+   ]
+  },
+  {
+   "node": "LShin__calf__1",
+   "family": "calf",
+   "side": "L",
+   "bone": "LShin",
+   "tris": 330,
+   "centre": [
+    -0.0715,
+    0.0017,
+    0.5066
+   ],
+   "size": [
+    0.0158,
+    0.0614,
+    0.0897
+   ]
+  },
+  {
+   "node": "LThigh__tight__84",
+   "family": "tight",
+   "side": "L",
+   "bone": "LThigh",
+   "tris": 640,
+   "centre": [
+    -0.0956,
+    0.0391,
+    0.8266
+   ],
+   "size": [
+    0.1584,
+    0.1829,
+    0.5032
+   ]
+  },
+  {
+   "node": "LThigh__tight__85",
+   "family": "tight",
+   "side": "L",
+   "bone": "LThigh",
+   "tris": 330,
+   "centre": [
+    -0.0756,
+    0.0168,
+    0.6156
+   ],
+   "size": [
+    0.0181,
+    0.0623,
+    0.0824
+   ]
+  },
+  {
+   "node": "LThumb1__thumbRoot__78",
+   "family": "thumbRoot",
+   "side": "L",
+   "bone": "LThumb1",
+   "tris": 326,
+   "centre": [
+    -0.2176,
+    -0.0795,
+    0.8764
+   ],
+   "size": [
+    0.023,
+    0.0241,
+    0.0453
+   ]
+  },
+  {
+   "node": "LThumb1__thunbKnot__82",
+   "family": "thunbKnot",
+   "side": "L",
+   "bone": "LThumb1",
+   "tris": 256,
+   "centre": [
+    -0.22,
+    -0.0844,
+    0.8917
+   ],
+   "size": [
+    0.0079,
+    0.0158,
+    0.0158
+   ]
+  },
+  {
+   "node": "LThumb2__thumbMid__76",
+   "family": "thumbMid",
+   "side": "L",
+   "bone": "LThumb2",
+   "tris": 380,
+   "centre": [
+    -0.2105,
+    -0.0709,
+    0.8483
+   ],
+   "size": [
+    0.0191,
+    0.0192,
+    0.0351
+   ]
+  },
+  {
+   "node": "LThumb3__thumbTip__80",
+   "family": "thumbTip",
+   "side": "L",
+   "bone": "LThumb3",
+   "tris": 274,
+   "centre": [
+    -0.207,
+    -0.0675,
+    0.8284
+   ],
+   "size": [
+    0.0161,
+    0.0138,
+    0.0287
+   ]
+  },
+  {
+   "node": "LUpperArm__shoulder__74",
+   "family": "shoulder",
+   "side": "L",
+   "bone": "LUpperArm",
+   "tris": 982,
+   "centre": [
+    -0.1466,
+    -0.0171,
+    1.4057
+   ],
+   "size": [
+    0.0895,
+    0.1091,
+    0.1236
+   ]
+  },
+  {
+   "node": "LUpperArm__upperArm__88",
+   "family": "upperArm",
+   "side": "L",
+   "bone": "LUpperArm",
+   "tris": 816,
+   "centre": [
+    -0.1633,
+    -0.0703,
+    1.2802
+   ],
+   "size": [
+    0.0892,
+    0.126,
+    0.1791
+   ]
+  },
+  {
+   "node": "LUpperArm__upperArm__89",
+   "family": "upperArm",
+   "side": "L",
+   "bone": "LUpperArm",
+   "tris": 650,
+   "centre": [
+    -0.1517,
+    -0.0439,
+    1.3551
+   ],
+   "size": [
+    0.0433,
+    0.0516,
+    0.0616
+   ]
+  },
+  {
+   "node": "LUpperArm__upperArm__90",
+   "family": "upperArm",
+   "side": "L",
+   "bone": "LUpperArm",
+   "tris": 330,
+   "centre": [
+    -0.1654,
+    -0.0893,
+    1.2294
+   ],
+   "size": [
+    0.0345,
+    0.06,
+    0.0726
+   ]
+  },
+  {
+   "node": "RClavicle__clavicleKnot__12",
+   "family": "clavicleKnot",
+   "side": "R",
+   "bone": "RClavicle",
+   "tris": 340,
+   "centre": [
+    0.093,
+    -0.0103,
+    1.4176
+   ],
+   "size": [
+    0.0603,
+    0.0499,
+    0.0499
+   ]
+  },
+  {
+   "node": "RClavicle__clavicleKnot__13",
+   "family": "clavicleKnot",
+   "side": "R",
+   "bone": "RClavicle",
+   "tris": 200,
+   "centre": [
+    0.1336,
+    -0.0112,
+    1.418
+   ],
+   "size": [
+    0.0453,
+    0.0526,
+    0.0713
+   ]
+  },
+  {
+   "node": "RFoot__foot__18",
+   "family": "foot",
+   "side": "R",
+   "bone": "RFoot",
+   "tris": 844,
+   "centre": [
+    0.0622,
+    0.0464,
+    0.0581
+   ],
+   "size": [
+    0.0685,
+    0.1767,
+    0.1161
+   ]
+  },
+  {
+   "node": "RFoot__foot__19",
+   "family": "foot",
+   "side": "R",
+   "bone": "RFoot",
+   "tris": 506,
+   "centre": [
+    0.0564,
+    0.0045,
+    0.1208
+   ],
+   "size": [
+    0.0413,
+    0.0411,
+    0.0698
+   ]
+  },
+  {
+   "node": "RForearm__elbow__15",
+   "family": "elbow",
+   "side": "R",
+   "bone": "RForearm",
+   "tris": 978,
+   "centre": [
+    0.1731,
+    -0.1123,
+    1.1848
+   ],
+   "size": [
+    0.0613,
+    0.0861,
+    0.1027
+   ]
+  },
+  {
+   "node": "RForearm__foreArm__22",
+   "family": "foreArm",
+   "side": "R",
+   "bone": "RForearm",
+   "tris": 924,
+   "centre": [
+    0.1972,
+    -0.1192,
+    1.0644
+   ],
+   "size": [
+    0.1104,
+    0.0852,
+    0.2308
+   ]
+  },
+  {
+   "node": "RForearm__foreArm__23",
+   "family": "foreArm",
+   "side": "R",
+   "bone": "RForearm",
+   "tris": 330,
+   "centre": [
+    0.1832,
+    -0.118,
+    1.1425
+   ],
+   "size": [
+    0.0354,
+    0.0524,
+    0.0678
+   ]
+  },
+  {
+   "node": "RHand__palm__56",
+   "family": "palm",
+   "side": "R",
+   "bone": "RHand",
+   "tris": 582,
+   "centre": [
+    0.2364,
+    -0.1136,
+    0.8793
+   ],
+   "size": [
+    0.0516,
+    0.082,
+    0.0873
+   ]
+  },
+  {
+   "node": "RHand__forearmKnot__32",
+   "family": "forearmKnot",
+   "side": "R",
+   "bone": "RHand",
+   "tris": 576,
+   "centre": [
+    0.2314,
+    -0.1146,
+    0.9294
+   ],
+   "size": [
+    0.0137,
+    0.0506,
+    0.0115
+   ]
+  },
+  {
+   "node": "RHand__palm__57",
+   "family": "palm",
+   "side": "R",
+   "bone": "RHand",
+   "tris": 512,
+   "centre": [
+    0.2323,
+    -0.1146,
+    0.9288
+   ],
+   "size": [
+    0.0214,
+    0.0269,
+    0.0203
+   ]
+  },
+  {
+   "node": "RHand__forearmKnot__29",
+   "family": "forearmKnot",
+   "side": "R",
+   "bone": "RHand",
+   "tris": 324,
+   "centre": [
+    0.2222,
+    -0.1166,
+    0.9625
+   ],
+   "size": [
+    0.0413,
+    0.0413,
+    0.0516
+   ]
+  },
+  {
+   "node": "RHand__forearmKnot__33",
+   "family": "forearmKnot",
+   "side": "R",
+   "bone": "RHand",
+   "tris": 192,
+   "centre": [
+    0.2281,
+    -0.1152,
+    0.9456
+   ],
+   "size": [
+    0.0194,
+    0.0356,
+    0.0119
+   ]
+  },
+  {
+   "node": "RHand__forearmKnot__30",
+   "family": "forearmKnot",
+   "side": "R",
+   "bone": "RHand",
+   "tris": 160,
+   "centre": [
+    0.2314,
+    -0.1325,
+    0.9355
+   ],
+   "size": [
+    0.027,
+    0.012,
+    0.0354
+   ]
+  },
+  {
+   "node": "RHand__forearmKnot__31",
+   "family": "forearmKnot",
+   "side": "R",
+   "bone": "RHand",
+   "tris": 160,
+   "centre": [
+    0.2278,
+    -0.0974,
+    0.9362
+   ],
+   "size": [
+    0.027,
+    0.0121,
+    0.0354
+   ]
+  },
+  {
+   "node": "RIndex1__indexRoot__41",
+   "family": "indexRoot",
+   "side": "R",
+   "bone": "RIndex1",
+   "tris": 366,
+   "centre": [
+    0.2483,
+    -0.0834,
+    0.8224
+   ],
+   "size": [
+    0.0171,
+    0.0194,
+    0.0427
+   ]
+  },
+  {
+   "node": "RIndex1__indexKnot__39",
+   "family": "indexKnot",
+   "side": "R",
+   "bone": "RIndex1",
+   "tris": 256,
+   "centre": [
+    0.2477,
+    -0.0827,
+    0.8367
+   ],
+   "size": [
+    0.0158,
+    0.0062,
+    0.0159
+   ]
+  },
+  {
+   "node": "RIndex2__inderMid__37",
+   "family": "inderMid",
+   "side": "R",
+   "bone": "RIndex2",
+   "tris": 380,
+   "centre": [
+    0.2499,
+    -0.0869,
+    0.7963
+   ],
+   "size": [
+    0.0146,
+    0.0166,
+    0.0337
+   ]
+  },
+  {
+   "node": "RIndex3__indexTip__43",
+   "family": "indexTip",
+   "side": "R",
+   "bone": "RIndex3",
+   "tris": 274,
+   "centre": [
+    0.2494,
+    -0.0878,
+    0.7765
+   ],
+   "size": [
+    0.0141,
+    0.0148,
+    0.03
+   ]
+  },
+  {
+   "node": "RMiddle1__middleRoot__51",
+   "family": "middleRoot",
+   "side": "R",
+   "bone": "RMiddle1",
+   "tris": 364,
+   "centre": [
+    0.2502,
+    -0.1038,
+    0.8178
+   ],
+   "size": [
+    0.017,
+    0.0181,
+    0.0471
+   ]
+  },
+  {
+   "node": "RMiddle1__middleKnot__47",
+   "family": "middleKnot",
+   "side": "R",
+   "bone": "RMiddle1",
+   "tris": 256,
+   "centre": [
+    0.2498,
+    -0.1037,
+    0.8345
+   ],
+   "size": [
+    0.0158,
+    0.0054,
+    0.0159
+   ]
+  },
+  {
+   "node": "RMiddle2__middleMid__49",
+   "family": "middleMid",
+   "side": "R",
+   "bone": "RMiddle2",
+   "tris": 380,
+   "centre": [
+    0.2517,
+    -0.1055,
+    0.788
+   ],
+   "size": [
+    0.0146,
+    0.0158,
+    0.0363
+   ]
+  },
+  {
+   "node": "RMiddle3__middleTip__53",
+   "family": "middleTip",
+   "side": "R",
+   "bone": "RMiddle3",
+   "tris": 274,
+   "centre": [
+    0.2512,
+    -0.1057,
+    0.7668
+   ],
+   "size": [
+    0.0141,
+    0.0147,
+    0.0299
+   ]
+  },
+  {
+   "node": "RPinky1__pinkyRoot__63",
+   "family": "pinkyRoot",
+   "side": "R",
+   "bone": "RPinky1",
+   "tris": 362,
+   "centre": [
+    0.2517,
+    -0.1438,
+    0.8275
+   ],
+   "size": [
+    0.0168,
+    0.0201,
+    0.0392
+   ]
+  },
+  {
+   "node": "RPinky1__pinkyKnot__59",
+   "family": "pinkyKnot",
+   "side": "R",
+   "bone": "RPinky1",
+   "tris": 256,
+   "centre": [
+    0.2513,
+    -0.1449,
+    0.8401
+   ],
+   "size": [
+    0.0158,
+    0.0067,
+    0.016
+   ]
+  },
+  {
+   "node": "RPinky2__pinkyMid__61",
+   "family": "pinkyMid",
+   "side": "R",
+   "bone": "RPinky2",
+   "tris": 380,
+   "centre": [
+    0.2532,
+    -0.1403,
+    0.803
+   ],
+   "size": [
+    0.0146,
+    0.0174,
+    0.0337
+   ]
+  },
+  {
+   "node": "RPinky3__pinkyTip__65",
+   "family": "pinkyTip",
+   "side": "R",
+   "bone": "RPinky3",
+   "tris": 274,
+   "centre": [
+    0.2532,
+    -0.1385,
+    0.7857
+   ],
+   "size": [
+    0.0138,
+    0.0147,
+    0.0254
+   ]
+  },
+  {
+   "node": "RRing1__ringRoot__71",
+   "family": "ringRoot",
+   "side": "R",
+   "bone": "RRing1",
+   "tris": 362,
+   "centre": [
+    0.2511,
+    -0.1237,
+    0.8218
+   ],
+   "size": [
+    0.0173,
+    0.018,
+    0.0426
+   ]
+  },
+  {
+   "node": "RRing1__ringKnot__67",
+   "family": "ringKnot",
+   "side": "R",
+   "bone": "RRing1",
+   "tris": 256,
+   "centre": [
+    0.2508,
+    -0.1243,
+    0.8364
+   ],
+   "size": [
+    0.0158,
+    0.0052,
+    0.0159
+   ]
+  },
+  {
+   "node": "RRing2__ringMid__69",
+   "family": "ringMid",
+   "side": "R",
+   "bone": "RRing2",
+   "tris": 380,
+   "centre": [
+    0.2526,
+    -0.1227,
+    0.7955
+   ],
+   "size": [
+    0.0144,
+    0.0159,
+    0.0337
+   ]
+  },
+  {
+   "node": "RRing3__ringTip__73",
+   "family": "ringTip",
+   "side": "R",
+   "bone": "RRing3",
+   "tris": 274,
+   "centre": [
+    0.2518,
+    -0.1225,
+    0.7757
+   ],
+   "size": [
+    0.0141,
+    0.0146,
+    0.0299
+   ]
+  },
+  {
+   "node": "RShin__knee__45",
+   "family": "knee",
+   "side": "R",
+   "bone": "RShin",
+   "tris": 1012,
+   "centre": [
+    0.0726,
+    0.0201,
+    0.5638
+   ],
+   "size": [
+    0.0554,
+    0.0944,
+    0.1155
+   ]
+  },
+  {
+   "node": "RShin__calf__2",
+   "family": "calf",
+   "side": "R",
+   "bone": "RShin",
+   "tris": 914,
+   "centre": [
+    0.0772,
+    -0.0049,
+    0.3329
+   ],
+   "size": [
+    0.1035,
+    0.1203,
+    0.4272
+   ]
+  },
+  {
+   "node": "RShin__calf__3",
+   "family": "calf",
+   "side": "R",
+   "bone": "RShin",
+   "tris": 330,
+   "centre": [
+    0.0715,
+    0.0017,
+    0.5066
+   ],
+   "size": [
+    0.0158,
+    0.0614,
+    0.0897
+   ]
+  },
+  {
+   "node": "RThigh__tight__86",
+   "family": "tight",
+   "side": "R",
+   "bone": "RThigh",
+   "tris": 640,
+   "centre": [
+    0.0956,
+    0.0391,
+    0.8266
+   ],
+   "size": [
+    0.1584,
+    0.1829,
+    0.5032
+   ]
+  },
+  {
+   "node": "RThigh__tight__87",
+   "family": "tight",
+   "side": "R",
+   "bone": "RThigh",
+   "tris": 330,
+   "centre": [
+    0.0756,
+    0.0168,
+    0.6156
+   ],
+   "size": [
+    0.0181,
+    0.0623,
+    0.0824
+   ]
+  },
+  {
+   "node": "RThumb1__thumbRoot__79",
+   "family": "thumbRoot",
+   "side": "R",
+   "bone": "RThumb1",
+   "tris": 326,
+   "centre": [
+    0.2176,
+    -0.0795,
+    0.8764
+   ],
+   "size": [
+    0.023,
+    0.0241,
+    0.0453
+   ]
+  },
+  {
+   "node": "RThumb1__thunbKnot__83",
+   "family": "thunbKnot",
+   "side": "R",
+   "bone": "RThumb1",
+   "tris": 256,
+   "centre": [
+    0.22,
+    -0.0844,
+    0.8917
+   ],
+   "size": [
+    0.0079,
+    0.0158,
+    0.0158
+   ]
+  },
+  {
+   "node": "RThumb2__thumbMid__77",
+   "family": "thumbMid",
+   "side": "R",
+   "bone": "RThumb2",
+   "tris": 380,
+   "centre": [
+    0.2105,
+    -0.0709,
+    0.8483
+   ],
+   "size": [
+    0.0191,
+    0.0192,
+    0.0351
+   ]
+  },
+  {
+   "node": "RThumb3__thumbTip__81",
+   "family": "thumbTip",
+   "side": "R",
+   "bone": "RThumb3",
+   "tris": 274,
+   "centre": [
+    0.207,
+    -0.0675,
+    0.8284
+   ],
+   "size": [
+    0.0161,
+    0.0138,
+    0.0287
+   ]
+  },
+  {
+   "node": "RUpperArm__shoulder__75",
+   "family": "shoulder",
+   "side": "R",
+   "bone": "RUpperArm",
+   "tris": 982,
+   "centre": [
+    0.1466,
+    -0.0171,
+    1.4057
+   ],
+   "size": [
+    0.0895,
+    0.1091,
+    0.1236
+   ]
+  },
+  {
+   "node": "RUpperArm__upperArm__91",
+   "family": "upperArm",
+   "side": "R",
+   "bone": "RUpperArm",
+   "tris": 816,
+   "centre": [
+    0.1633,
+    -0.0703,
+    1.2802
+   ],
+   "size": [
+    0.0892,
+    0.126,
+    0.1791
+   ]
+  },
+  {
+   "node": "RUpperArm__upperArm__92",
+   "family": "upperArm",
+   "side": "R",
+   "bone": "RUpperArm",
+   "tris": 650,
+   "centre": [
+    0.1517,
+    -0.0439,
+    1.3551
+   ],
+   "size": [
+    0.0433,
+    0.0516,
+    0.0616
+   ]
+  },
+  {
+   "node": "RUpperArm__upperArm__93",
+   "family": "upperArm",
+   "side": "R",
+   "bone": "RUpperArm",
+   "tris": 330,
+   "centre": [
+    0.1654,
+    -0.0893,
+    1.2294
+   ],
+   "size": [
+    0.0345,
+    0.06,
+    0.0726
+   ]
+  },
+  {
+   "node": "Waist__waist__94",
+   "family": "waist",
+   "side": "",
+   "bone": "Waist",
+   "tris": 782,
+   "centre": [
+    -0.0,
+    0.0635,
+    1.1932
+   ],
+   "size": [
+    0.1907,
+    0.1587,
+    0.2161
+   ]
+  }
+ ],
+ "eye": [
+  0,
+  1.65224,
+  -0.09652
+ ]
+}

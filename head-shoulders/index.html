@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Head &amp; Shoulders Lab</title>
+<style>
+*{box-sizing:border-box}body{margin:0;overflow:hidden;background:#0b1016;color:#e8eef2;font:14px system-ui,sans-serif}canvas#scene{display:block;width:100vw;height:100dvh}
+#cam,#ov{position:fixed;top:12px;right:12px;width:min(320px,42vw);border-radius:10px;background:#000;z-index:3}#cam{border:1px solid #ffffff30}#ov{background:none;pointer-events:none;z-index:4}body.mirror #cam,body.mirror #ov{transform:scaleX(-1)}
+#hud{position:fixed;left:12px;top:12px;font:12px/1.6 ui-monospace,monospace;color:#9fe8c4;text-shadow:0 0 4px #000;z-index:3;white-space:pre-line}
+#panel{position:fixed;left:50%;bottom:16px;transform:translateX(-50%);width:min(620px,calc(100% - 24px));max-height:min(72dvh,720px);overflow:auto;padding:14px 16px;border-radius:14px;background:#101820ee;border:1px solid #ffffff18;z-index:3}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}.row:first-child{margin-top:0}
+button{font:inherit;border:1px solid #ffffff22;border-radius:9px;padding:9px 13px;color:#eaf4ef;background:#25323c;cursor:pointer}button.primary{background:#8fe3b4;color:#10261a;border:0}button:disabled{opacity:.5}
+label{display:flex;align-items:center;gap:6px;font-size:12px;color:#b9c6cc}input[type=range]{width:90px;accent-color:#8fe3b4}
+#status{font-size:13px;color:#d7e3e8}#error{color:#ffb3a0;font-size:12px;white-space:pre-wrap}
+details{margin-top:10px;border-top:1px solid #ffffff18;padding-top:9px}summary{cursor:pointer;color:#9fe8c4;font-weight:700}.setting{padding:9px 0;border-bottom:1px solid #ffffff10}.setting label{justify-content:space-between;font-size:13px;color:#e8eef2}.setting input[type=range]{width:min(260px,48vw)}.setting select{max-width:250px;background:#202d37;color:#e8eef2;border:1px solid #ffffff22;border-radius:7px;padding:6px}.setting small{display:block;margin-top:5px;color:#9eacb4;line-height:1.35}.setting output{min-width:42px;text-align:right;color:#9fe8c4}@media(max-width:640px){#panel{bottom:8px;max-height:62dvh;padding:12px}#cam,#ov{width:min(240px,54vw)}.setting label{align-items:flex-start;flex-wrap:wrap}.setting input[type=range]{width:100%}}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"}}</script>
+</head>
+<body class="mirror">
+<canvas id="scene"></canvas>
+<video id="cam" autoplay playsinline muted></video><canvas id="ov"></canvas>
+<div id="hud">head + shoulders · loading one model…</div>
+<div id="panel">
+  <div class="row"><button class="primary" id="start">Start camera</button><button id="phoneCam" hidden>Phone as camera</button><button id="center">Center</button><a href="../hand-lines/" style="color:#9fe8c4">Back to hand lab</a></div>
+  <details open><summary>Movement settings</summary>
+    <div class="setting"><label><span>Lock body</span><input id="lockBody" type="checkbox"></label><small>Keeps the shoulders and torso fixed while head and eye tracking continue.</small></div>
+    <div class="setting"><label>Turn gain <input id="turnGain" type="range" min="0.5" max="2.5" step="0.1" value="1.2"><output id="turnGainV">1.2×</output></label><small>Multiplies tracked head rotation. Higher values make a small real turn rotate the model farther.</small></div>
+    <div class="setting"><label>Move gain <input id="moveGain" type="range" min="0" max="2" step="0.1" value="1"><output id="moveGainV">1.0×</output></label><small>Multiplies shoulder movement and estimated forward/back movement. Zero keeps the model centred.</small></div>
+    <div class="setting"><label>Neck share <input id="neckShare" type="range" min="0" max="0.8" step="0.05" value="0.35"><output id="neckShareV">35%</output></label><small>Chooses how much head rotation is shared with the neck. The remaining rotation stays on the head joint.</small></div>
+  </details>
+  <details id="performanceSettings" open><summary>Phone performance settings</summary>
+    <div class="setting"><label>Performance preset <select id="performancePreset"><option value="auto">Automatic (recommended)</option><option value="fast">Fast phone</option><option value="balanced">Balanced</option><option value="quality">High quality</option><option value="custom">Custom</option></select></label><small>Changes the real controls below. Automatic uses Fast phone on a phone and High quality on a computer.</small></div>
+    <div class="setting"><label>Tracker processor <select id="trackerDelegate"><option value="auto">Automatic GPU → CPU</option><option value="GPU">GPU only</option><option value="CPU">CPU only</option></select></label><small>Automatic normally works best. Changing this requires stopping and restarting the camera.</small></div>
+    <div class="setting"><label>Tracking image width <input id="trackingWidth" type="range" min="192" max="480" step="32" value="256"><output>256 px</output></label><small>Lower values reduce phone work and heat. Higher values may detect small or distant features more reliably.</small></div>
+    <div class="setting"><label>Face tracking rate <input id="faceRate" type="range" min="5" max="30" step="1" value="15"><output>15 fps</output></label><small>How often head rotation and eyes are measured. Lower values reduce lag caused by inference but update the head less often.</small></div>
+    <div class="setting"><label>Shoulder tracking rate <input id="shoulderRate" type="range" min="2" max="20" step="1" value="8"><output>8 fps</output></label><small>Shoulders move more slowly than the face, so this can usually stay below the face rate.</small></div>
+    <div class="setting"><label>3D scene frame rate <input id="sceneRate" type="range" min="15" max="60" step="5" value="30"><output>30 fps</output></label><small>Limits model animation and rendering. Lower values save battery and GPU time.</small></div>
+    <div class="setting"><label>Render resolution <input id="renderScale" type="range" min="0.5" max="2" step="0.25" value="1"><output>1×</output></label><small>Controls 3D pixels, not tracking accuracy. One is the best phone starting point; two is much heavier.</small></div>
+    <div class="setting"><label>Tracking overlay rate <input id="overlayRate" type="range" min="0" max="30" step="1" value="10"><output>10 fps</output></label><small>How often the dots and axes are redrawn. Set to zero to hide the overlay and save more work.</small></div>
+  </details>
+  <div class="row"><span id="status">Start the camera, look at it, press Center.</span></div><div id="error"></div>
+</div>
+<script type="module">
+import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { phoneCamera } from './camlink.mjs?v=7';
+const $ = id => document.getElementById(id), Q = new URLSearchParams(location.search), CAM = Q.has('cam');
+const status = t => $('status').textContent = t;
+const phoneLayout = matchMedia('(max-width: 700px)').matches || /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent);
+const performanceIds = ['trackingWidth', 'faceRate', 'shoulderRate', 'sceneRate', 'renderScale', 'overlayRate'];
+const performancePlans = {
+  fast: { trackingWidth: 224, faceRate: 12, shoulderRate: 6, sceneRate: 30, renderScale: .75, overlayRate: 8 },
+  balanced: { trackingWidth: 320, faceRate: 20, shoulderRate: 10, sceneRate: 45, renderScale: 1, overlayRate: 15 },
+  quality: { trackingWidth: 480, faceRate: 30, shoulderRate: 15, sceneRate: 60, renderScale: Math.min(2, devicePixelRatio), overlayRate: 30 }
+};
+const units = { trackingWidth: ' px', faceRate: ' fps', shoulderRate: ' fps', sceneRate: ' fps', renderScale: '×', overlayRate: ' fps' };
+function showPerformanceValue(id) { const input = $(id); input.nextElementSibling.textContent = input.value + units[id]; }
+function applyPerformancePlan(name) { const actual = name === 'auto' ? (phoneLayout ? 'fast' : 'quality') : name, plan = performancePlans[actual]; if (!plan) return; for (const id of performanceIds) { $(id).value = plan[id]; showPerformanceValue(id); } }
+function savePerformance() { try { localStorage.setItem('head-shoulders-performance-v1', JSON.stringify({ preset: $('performancePreset').value, delegate: $('trackerDelegate').value, ...Object.fromEntries(performanceIds.map(id => [id, +$(id).value])) })); } catch {} }
+try { const saved = JSON.parse(localStorage.getItem('head-shoulders-performance-v1') || 'null'); if (saved) { $('performancePreset').value = saved.preset || 'custom'; $('trackerDelegate').value = saved.delegate || 'auto'; for (const id of performanceIds) if (Number.isFinite(saved[id])) $(id).value = saved[id]; } else applyPerformancePlan('auto'); } catch { applyPerformancePlan('auto'); }
+for (const id of performanceIds) showPerformanceValue(id);
+
+// --- scene ------------------------------------------------------------------------------------------------
+const renderer = new THREE.WebGLRenderer({ canvas: $('scene'), antialias: true }); renderer.setPixelRatio(+$('renderScale').value);
+const scene = new THREE.Scene(); scene.background = new THREE.Color('#0b1016');
+const camera = new THREE.PerspectiveCamera(38, 1, .05, 50);
+scene.add(new THREE.HemisphereLight(0xdfe9ff, 0x2a2018, 1.1));
+const key = new THREE.DirectionalLight(0xfff1dc, 2.2); key.position.set(1.5, 2.5, 3); scene.add(key);
+const rim = new THREE.DirectionalLight(0x7fb8ff, 1.2); rim.position.set(-2, 1, -2); scene.add(rim);
+function resize() { renderer.setPixelRatio(+$('renderScale').value); renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); } addEventListener('resize', resize); resize();
+
+// --- the bust: root -> neck -> head -> eyes; rest world rotations are what the tracking rotates from ----------
+const rig = { root: null, neck: null, head: null, eyes: [] }, rest = new Map(), model = new THREE.Group(); scene.add(model);
+const _q = new THREE.Quaternion(), _p = new THREE.Quaternion(), _e = new THREE.Euler(), _v = new THREE.Vector3();
+let bustHeight = 2, bust = null;
+// arms: shoulder -> elbow -> wrist capsules from the pose tracker's metric joints, hung on the bust's shoulders (no hands)
+const arms = { group: new THREE.Group(), joints: null, smooth: [], parts: [], anchor: [new THREE.Vector3(), new THREE.Vector3()], scale: 1 };
+new GLTFLoader().load('alien.glb', g => {
+  g.scene.traverse(o => { if (o.isBone) { const n = o.name.toLowerCase(); if (n.includes('root')) rig.root = o; else if (n.includes('neck')) rig.neck = o; else if (n.includes('head')) rig.head = o; else if (n.includes('eye')) rig.eyes.push(o); } if (o.isMesh) o.frustumCulled = false; });
+  g.scene.updateMatrixWorld(true);
+  for (const b of [rig.root, rig.neck, rig.head, ...rig.eyes]) if (b) rest.set(b, b.getWorldQuaternion(new THREE.Quaternion()));
+  const box = new THREE.Box3().setFromObject(g.scene), c = box.getCenter(new THREE.Vector3()), s = box.getSize(new THREE.Vector3()); bustHeight = s.y;
+  g.scene.position.set(-c.x, -c.y, -c.z); model.add(g.scene);
+  camera.position.set(0, s.y * 0.1, s.y * 2.35); camera.lookAt(0, -s.y * 0.05, 0);
+  bust = { box: box.clone().translate(new THREE.Vector3(-c.x, -c.y, -c.z)), size: s };
+  // shoulders of the bust: near the lower corners of the box, a little inside; arm scale: bust width = a 0.42 m human shoulder span
+  arms.anchor[0].set(-s.x * 0.5, bust.box.min.y + s.y * 0.12, 0); arms.anchor[1].set(s.x * 0.5, bust.box.min.y + s.y * 0.12, 0); arms.scale = s.x / 0.42;
+  // The imported bust remains the only rendered model. Shoulder tracking moves
+  // its root; separate arm or hand meshes are intentionally not created.
+  $('hud').textContent = 'head + shoulders · one model ready · ' + (rig.head ? 'head bone found' : 'NO head bone') + (rig.root ? ' · shoulders on root' : '');
+}, undefined, e => $('error').textContent = 'model failed: ' + e.message);
+function setWorldRot(bone, qWorld) { bone.parent.updateWorldMatrix(true, false); bone.parent.getWorldQuaternion(_p); bone.quaternion.copy(_p.invert().multiply(qWorld)); }
+const scaled = (q, k, out) => { _e.setFromQuaternion(q, 'YXZ'); _e.x *= k; _e.y *= k; _e.z *= k; return out.setFromEuler(_e); };
+
+// --- tracking -> pose ---------------------------------------------------------------------------------------
+const view = { mirror: true, turn: 1.2, move: 1, neck: .35, lock: false };
+const track = { faceQ: new THREE.Quaternion(), faceT: new THREE.Vector3(), neutralQ: null, neutralT: new THREE.Vector3(), haveFace: false, gaze: [0, 0], neutralGaze: [0, 0],
+  shoulder: { roll: 0, yaw: 0 }, neutralS: null, haveShoulders: false, ms: 0, seen: 0, yawDeg: 0, pitchDeg: 0, rollDeg: 0, delegates: ['?', '?'] };
+const M = new THREE.Matrix4(), rawQ = new THREE.Quaternion(), rawT = new THREE.Vector3(), relQ = new THREE.Quaternion(), smoothQ = new THREE.Quaternion(), tmpQ = new THREE.Quaternion(), smoothT = new THREE.Vector3();
+function onResult(r) {
+  if (r.task === 'face') { track.ms = r.ms; track.seen = performance.now(); overlay.face = r.face?.pts || null; overlay.matrix = r.face?.matrix || null; }
+  if (r.task === 'pose') overlay.pose = r.pose?.all || null;
+  if (r.task === 'face') if (r.face) {
+    M.fromArray(r.face.matrix); M.decompose(rawT, rawQ, _v);
+    if (!track.neutralQ) center();
+    track.faceQ.copy(rawQ); track.faceT.copy(rawT); track.haveFace = true;
+    const b = r.face.blend || {};
+    track.gaze = [((b.eyeLookInLeft || 0) - (b.eyeLookOutLeft || 0) + (b.eyeLookOutRight || 0) - (b.eyeLookInRight || 0)) / 2,   // > 0: the person looks to their right
+                  ((b.eyeLookUpLeft || 0) + (b.eyeLookUpRight || 0) - (b.eyeLookDownLeft || 0) - (b.eyeLookDownRight || 0)) / 2];
+  } else track.haveFace = false;
+  if (r.task === 'pose') { arms.joints = r.pose?.arms || null; arms.seen = performance.now(); } if (r.task === 'pose') if (r.pose) {
+    const [l, rr] = r.pose.img, [wl, wr] = r.pose.world;
+    if (l[2] > .5 && rr[2] > .5) {
+      const roll = Math.atan2(rr[1] - l[1], rr[0] - l[0]) - Math.PI;   // shoulder line in the picture (y down); level = 0
+      const yaw = Math.atan2(wr[2] - wl[2], wl[0] - wr[0]);           // one shoulder nearer the camera than the other
+      track.shoulder = { roll: Math.atan2(Math.sin(roll), Math.cos(roll)), yaw, mid: [(l[0] + rr[0]) / 2, (l[1] + rr[1]) / 2], width: Math.hypot(rr[0] - l[0], rr[1] - l[1]) }; if (!track.neutralS) track.neutralS = { ...track.shoulder }; track.haveShoulders = true;
+    }
+  }
+}
+function center() { track.neutralQ = rawQ.clone(); track.neutralT.copy(rawT); track.neutralGaze = [...track.gaze]; track.neutralS = track.haveShoulders ? { ...track.shoulder } : null; status('Centered · move your head and shoulders'); }
+function applyPose(dt) {
+  if (!rig.head) return;
+  const fresh = performance.now() - track.seen < 600, k = 1 - Math.exp(-dt / .06);
+  if (fresh && track.haveFace && track.neutralQ) {
+    relQ.copy(track.neutralQ).invert().premultiply(track.faceQ);   // rotation since Center, in camera space
+    _e.setFromQuaternion(relQ, 'YXZ'); if (view.mirror) { _e.y = -_e.y; _e.z = -_e.z; } _e.x *= view.turn; _e.y *= view.turn; _e.z *= view.turn;
+    track.yawDeg = _e.y * 180 / Math.PI; track.pitchDeg = _e.x * 180 / Math.PI; track.rollDeg = _e.z * 180 / Math.PI;
+    smoothQ.slerp(tmpQ.setFromEuler(_e), k);
+    if (track.haveShoulders && track.neutralS) {   // the bust travels with your shoulders: sideways/up from the picture, closer/farther from the shoulder width
+      const S = track.shoulder, N = track.neutralS, u = bustHeight * 0.8 / N.width;   // picture units -> bust units (shoulder span = 0.8 bust heights)
+      _v.set((view.mirror ? 1 : -1) * -(S.mid[0] - N.mid[0]) * u, /* picture x grows to your left = screen-left in the mirror */ -(S.mid[1] - N.mid[1]) * u, (S.width / N.width - 1) * bustHeight * 1.5).multiplyScalar(view.move);
+      smoothT.lerp(_v, k);
+    }
+  } else { smoothQ.slerp(_q.identity(), k * .5); smoothT.lerp(_v.set(0, 0, 0), k * .5); }
+  // shoulders: roll and a little yaw on the root (the whole bust), relative to the centred pose
+  let sr = 0, sy = 0;
+  if (!view.lock && fresh && track.haveShoulders && track.neutralS) { sr = track.shoulder.roll - track.neutralS.roll; sy = (track.shoulder.yaw - track.neutralS.yaw) * .7; if (view.mirror) { sr = -sr; sy = -sy; } }
+  _e.set(0, sy, sr, 'YXZ'); tmpQ.setFromEuler(_e);
+  if (rig.root) setWorldRot(rig.root, _q.copy(tmpQ).multiply(rest.get(rig.root)));   // pose runs every other frame and shoulders are slow: no extra smoothing
+  model.position.copy(smoothT);
+  if (rig.neck) setWorldRot(rig.neck, scaled(smoothQ, view.neck, _q).multiply(rest.get(rig.neck)));
+  setWorldRot(rig.head, _q.copy(smoothQ).multiply(rest.get(rig.head)));
+  const cl = x => Math.max(-1, Math.min(1, x)), gx = (view.mirror ? -1 : 1) * cl(track.gaze[0] - track.neutralGaze[0]) * 25 * Math.PI / 180, gy = -cl(track.gaze[1] - track.neutralGaze[1]) * 15 * Math.PI / 180;
+  for (const eye of rig.eyes) { _e.set(gy, gx, 0, 'YXZ'); setWorldRot(eye, _q.copy(smoothQ).multiply(tmpQ.setFromEuler(_e)).multiply(rest.get(eye))); }
+}
+
+const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _up = new THREE.Vector3(0, 1, 0);
+function placeCapsule(mesh, a, b) { _a.subVectors(b, a); const L = _a.length(); mesh.position.copy(a).addScaledVector(_a, 0.5); mesh.scale.set(1, Math.max(0.01, L), 1); mesh.quaternion.setFromUnitVectors(_up, _a.normalize()); }
+function applyArms(dt) {
+  if (!bust) return; const P = overlay.pose, J = arms.joints, k = 1 - Math.exp(-dt / .05);
+  if (!P || !J || performance.now() - (arms.seen || 0) > 1500 || Math.max(P[11][2], P[12][2]) < .3) { arms.parts.forEach(m => m.visible = false); return; }   // pose keeps estimating joints outside the picture: draw them anyway
+  // the yellow line on the camera, copied: picture offsets from each shoulder scaled by the shoulder span, depth from the metric joints
+  const span = Math.hypot(P[12][0] - P[11][0], P[12][1] - P[11][1]) || 1e-3, u = (arms.anchor[1].x - arms.anchor[0].x) / span, sx = view.mirror ? -1 : 1;
+  for (let side = 0; side < 2; side++) {   // 0 = the person's left (pose 11), 1 = right (12)
+    const sh = 11 + side, el = 13 + side, wr = 15 + side, anchor = arms.anchor[view.mirror ? side : 1 - side];
+    const to = (i, out) => out.set(sx * -(P[i][0] - P[sh][0]) * u, -(P[i][1] - P[sh][1]) * u, 0).add(anchor);   // flat: the line on the camera, nothing else
+    const e = arms.smooth[side * 2] ||= to(el, new THREE.Vector3()), w = arms.smooth[side * 2 + 1] ||= to(wr, new THREE.Vector3());
+    e.lerp(to(el, _b), k); w.lerp(to(wr, _b), k);
+    placeCapsule(arms.parts[side * 2], anchor, e); placeCapsule(arms.parts[side * 2 + 1], e, w);
+    arms.parts[side * 2].visible = true; arms.parts[side * 2 + 1].visible = true;
+  }
+}
+
+// --- tracking overlay on the camera picture: face points, head axes, shoulders (tells tracking trouble from model trouble)
+const overlay = { face: null, matrix: null, pose: null }, ov = $('ov'), ox = ov.getContext('2d');
+function drawOverlay() {
+  const w = v.videoWidth, h = v.videoHeight; if (!w) return;
+  if (ov.width !== w || ov.height !== h) { ov.width = w; ov.height = h; }
+  ox.clearRect(0, 0, w, h); if (!running) return;
+  if (overlay.face) { ox.fillStyle = '#7dffb0'; const f = overlay.face; for (let i = 0; i < f.length; i += 2) ox.fillRect(f[i] * w - 1, f[i + 1] * h - 1, 2, 2); }
+  if (overlay.matrix && overlay.face) {   // head axes from the tracked pose: red = head's right, green = up, blue = forward, drawn at the nose
+    M.fromArray(overlay.matrix); const nx = overlay.face[2], ny = overlay.face[3], L = w * 0.12;
+    for (const [i, col, sy] of [[0, '#ff5a5a', 1], [4, '#7dff7d', -1], [8, '#5aa0ff', 1]]) { const e = M.elements; ox.strokeStyle = col; ox.lineWidth = 3; ox.beginPath(); ox.moveTo(nx * w, ny * h); ox.lineTo(nx * w + e[i] * L, ny * h - e[i + 1] * L); ox.stroke(); }
+  }
+  if (overlay.pose) { const P = overlay.pose, seg = (a, b) => { if (P[a][2] < .5 || P[b][2] < .5) return; ox.beginPath(); ox.moveTo(P[a][0] * w, P[a][1] * h); ox.lineTo(P[b][0] * w, P[b][1] * h); ox.stroke(); };
+    ox.strokeStyle = '#ffd75a'; ox.lineWidth = 4; seg(11, 12); ox.lineWidth = 2; for (const [a, b] of [[0, 11], [0, 12], [7, 8], [0, 7], [0, 8]]) seg(a, b);
+    ox.fillStyle = '#ffd75a'; P.forEach((q, i) => { if (q[2] >= .5) { ox.beginPath(); ox.arc(q[0] * w, q[1] * h, i === 11 || i === 12 ? 6 : 3, 0, 7); ox.fill(); } }); }
+}
+
+// --- camera + worker --------------------------------------------------------------------------------------
+let workers = [], stream = null, running = false, busy = [false, false], lastVideo = -1, lastSent = [-Infinity, -Infinity], lastOverlay = -Infinity, lastRender = 0, lastHud = -Infinity;
+const v = $('cam');
+const takeCam = s => { stream = s; v.srcObject = s; v.play().catch(() => {}); };
+async function start() {
+  if (running) { stop(); return; }
+  $('start').disabled = true; $('error').textContent = ''; status(CAM ? 'Waiting for the phone camera…' : 'Starting camera…');
+  try {
+    stream = CAM ? (stream?.active ? stream : await phoneCamera(status, takeCam)) : await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 30 } } });
+    takeCam(stream); status('Loading face + pose tracking…');
+    workers = ['face', 'pose'].map(task => new Worker(new URL('./tracker.mjs?v=8&task=' + task + '&delegate=' + $('trackerDelegate').value, import.meta.url), { type: 'module' }));
+    track.delegates = await Promise.all(workers.map(w => new Promise((res, rej) => { const t = setTimeout(() => rej(Error('tracker loading timed out')), 60000); w.onmessage = ({ data }) => { if (data.type === 'ready') { clearTimeout(t); res(data.delegate); } else if (data.type === 'error') { clearTimeout(t); rej(Error(data.message)); } }; w.onerror = e => { clearTimeout(t); rej(Error(e.message)); }; w.postMessage({ type: 'init' }); })));
+    workers.forEach((w, i) => w.onmessage = ({ data }) => { busy[i] = false; if (data.type === 'error') { $('error').textContent = data.task + ': ' + data.message; return; } if (data.type === 'result') onResult(data); });
+    running = true; $('start').textContent = 'Stop camera'; status('Look at the camera and press Center');
+  } catch (e) { stop(); $('error').textContent = e.name === 'NotAllowedError' ? 'Camera access was declined.' : e.message; }
+  finally { $('start').disabled = false; }
+}
+function stop() { running = false; overlay.face = overlay.pose = overlay.matrix = null; busy = [false, false]; lastSent = [-Infinity, -Infinity]; workers.forEach(w => w.terminate()); workers = []; if (!CAM) { stream?.getTracks().forEach(t => t.stop()); stream = null; } v.srcObject = null; ox.clearRect(0, 0, ov.width, ov.height); $('start').textContent = CAM ? 'Connect phone camera' : 'Start camera'; track.haveFace = track.haveShoulders = false; }
+function frame(now) {
+  requestAnimationFrame(frame);
+  if (running && v.readyState >= 2 && v.currentTime !== lastVideo) {
+    lastVideo = v.currentTime; const t = Math.round(now), rates = [+$('faceRate').value, +$('shoulderRate').value], width = +$('trackingWidth').value;
+    workers.forEach((w, i) => {
+      if (busy[i] || now - lastSent[i] < 1000 / rates[i]) return; busy[i] = true; lastSent[i] = now;
+      createImageBitmap(v, { resizeWidth: width, resizeHeight: Math.round(width * v.videoHeight / v.videoWidth), resizeQuality: 'low' }).then(bm => { if (workers[i] !== w) { bm.close(); return; } w.postMessage({ type: 'frame', bitmap: bm, time: t + i }, [bm]); }).catch(() => { busy[i] = false; });
+    });
+  }
+  const overlayRate = +$('overlayRate').value;
+  if (overlayRate > 0 && now - lastOverlay >= 1000 / overlayRate) { lastOverlay = now; drawOverlay(); }
+  else if (overlayRate === 0 && lastOverlay !== Infinity) { ox.clearRect(0, 0, ov.width, ov.height); lastOverlay = Infinity; }
+  else if (overlayRate > 0 && lastOverlay === Infinity) lastOverlay = -Infinity;
+  const sceneRate = +$('sceneRate').value;
+  if (now - lastRender < 1000 / sceneRate) return;
+  const dt = lastRender ? Math.min(.1, (now - lastRender) / 1000) : 1 / sceneRate; lastRender = now;
+  applyPose(dt); applyArms(dt);
+  if (running && now - lastHud > 250) { lastHud = now; $('hud').textContent = `face ${track.haveFace ? 'yes' : 'no'} · shoulders ${track.haveShoulders ? 'yes' : 'no'} · ${Math.round(track.ms)} ms · ${track.delegates[0]}/${track.delegates[1]}
+head: yaw ${track.yawDeg.toFixed(0)}° pitch ${track.pitchDeg.toFixed(0)}° roll ${track.rollDeg.toFixed(0)}°
+shoulders: roll ${((track.shoulder.roll - (track.neutralS?.roll || 0)) * 57.3).toFixed(0)}° turn ${((track.shoulder.yaw - (track.neutralS?.yaw || 0)) * 57.3).toFixed(0)}° · body ${view.lock ? 'LOCKED' : 'follows shoulders'}
+yellow = head + shoulder pose · green = face points · red/green/blue = head axes`;
+  }
+  renderer.render(scene, camera);
+}
+requestAnimationFrame(frame);
+window.alien = { rig, track, view, model, center, arms };   // for tests
+
+// --- controls ----------------------------------------------------------------------------------------------
+$('start').onclick = start; $('center').onclick = center;
+$('lockBody').onchange = () => { view.lock = $('lockBody').checked; };
+$('turnGain').oninput = () => { view.turn = +$('turnGain').value; $('turnGainV').textContent = view.turn.toFixed(1) + '×'; };
+$('moveGain').oninput = () => { view.move = +$('moveGain').value; $('moveGainV').textContent = view.move.toFixed(1) + '×'; };
+$('neckShare').oninput = () => { view.neck = +$('neckShare').value; $('neckShareV').textContent = Math.round(view.neck * 100) + '%'; };
+$('performancePreset').onchange = () => { if ($('performancePreset').value !== 'custom') applyPerformancePlan($('performancePreset').value); resize(); savePerformance(); };
+for (const id of performanceIds) $(id).oninput = () => { $('performancePreset').value = 'custom'; showPerformanceValue(id); if (id === 'renderScale') resize(); savePerformance(); };
+$('trackerDelegate').onchange = () => { savePerformance(); if (running) status('Processor changed · stop and restart the camera to apply it'); };
+$('phoneCam').onclick = () => { const u = new URL(location.href); u.searchParams.set('cam', ''); location.href = u.href; };
+document.addEventListener('visibilitychange', () => { if (document.hidden && running && !CAM) stop(); });
+if (CAM) { $('start').textContent = 'Connect phone camera'; start(); }
+</script>
+</body></html>

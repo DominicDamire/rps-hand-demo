@@ -1,0 +1,105 @@
+import * as T from 'three';
+import {DollRig} from '../doll/DollRig.js';
+import {fitPhotoHand} from '../hand-pnp-photo/photo-hand.mjs?v=flat11';
+import {directDriver} from './hand-driver.mjs?v=cross2';
+import {buildTips} from '../hand-pnp-photo/contact.mjs';
+import {loadCV} from '../hand-pnp-photo/opencv-core.mjs';
+import {solvePalmPose} from '../hand-pnp-photo/palm-pnp.mjs';
+import {liftCameraLandmarks} from '../hand-sweep-neck/projection.mjs';
+import {imagePalmSize,sizeDepth} from '../hand-sweep-neck/size-wall-depth.mjs';
+import {palmObservation,PalmSweepDepth} from '../hand-sweep-neck/palm-sweep-depth.mjs';
+import {reduceFalseDepthBends} from '../hand-sweep-neck/depth-lines.mjs';
+
+const batch=Number(new URLSearchParams(location.search).get('batch')||0),group='b'+String(batch).padStart(2,'0'),newReference=await(await fetch('./hand-reference.json')).json(),depthMode='Sweep';const out=document.getElementById('out'),rows=[],fingers=['Thumb','Index','Middle','Ring','Pinky'],models={},focal=1/(2*Math.tan(Math.PI/6));
+const frame=p=>{const y=p[9].clone().sub(p[0]).normalize(),x=p[5].clone().sub(p[17]);x.addScaledVector(y,-x.dot(y)).normalize();return new T.Matrix4().makeBasis(x,y,new T.Vector3().crossVectors(x,y).normalize());};
+try{
+const cfg={"method": "angles", "depth": "Sweep", "depthHint": 0.5, "postCaps": true, "postCoupling": 0.65, "id": 265, "label": "Limits + contact 55 / 75 px", "phase": 5, "postBaseSplay": true, "splayStart": 45, "splayLock": 70, "straightDepth": 1, "backLimit": 40, "postRoll": true, "jointLimits": true, "contactEnabled": true, "contactEnterPx": 55, "contactReleasePx": 75},cases=[cfg];
+const source=document.createElement('canvas');source.width=720;source.height=1280;let aspect=source.width/source.height;
+for(const type of ['reference']){out.textContent='Preparing '+type;const scene=new T.Scene(),rig=new DollRig(scene,{headLayer:false});await rig.ready;if(type==='reference'){fitPhotoHand(rig,{preservePalmRelief:group==='old',...(group==='old'?{}:{referencePoints:newReference.points})});if(group!=='old')extendShellTips(rig,newReference.shellTipExtraFractions);}const tips=buildTips(rig);if(type==='reference')for(const S of ['R','L'])for(const [f,n]of fingers.entries())tips[S+n]=rig.photoReference.targets[S][4+4*f].clone().sub(rig.photoReference.targets[S][3+4*f]);const ref={};for(const S of ['R','L']){ref[S]=[rig.rest[S+'Hand'].world.clone()];for(const n of fingers){for(let k=1;k<=3;k++)ref[S].push(rig.rest[S+n+k].world.clone());ref[S].push(rig.rest[S+n+'3'].world.clone().add(tips[S+n]));}}const spans=[];for(const S of ['R','L'])for(const [a,b]of [[0,5],[0,9],[0,13],[0,17],[5,17]])spans.push(ref[S][a].distanceTo(ref[S][b]));spans.sort((a,b)=>a-b);scene.add(new T.HemisphereLight(0xffffff,0x61778b,2.5));for(const pos of [[1,2,3],[-1,1,-3]]){const l=new T.DirectionalLight(0xffffff,1.5);l.position.set(...pos);scene.add(l);}models[type]={scene,rig,tips,ref,span:(spans[4]+spans[5])/2};}
+
+const cv=null,drivers={},depthStates={},poseStates={},frameTimes={};for(const c of cases){const m=models[c.method==='archive'?'archive':'reference'];drivers[c.id]=directDriver(m.rig,m.tips);depthStates[c.id]=new PalmSweepDepth();}
+const renderer=new T.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setSize(640,470,false);renderer.setClearColor('#1a2938');const camera=new T.PerspectiveCamera(90,640/470,.001,10),sheets={};
+for(const v of ['first','side','front']){const c=document.createElement('canvas');c.width=1920;c.height=1080;sheets[v]=c;}const composite=document.getElementById('view'),compositeContext=composite.getContext('2d');let lastResult=null;let live=false,liveEpoch=0,liveStream=null,liveFrame=0;const liveVideo=document.getElementById("cameraVideo"),cameraStatus=document.getElementById("cameraStatus");
+let worker,pending;
+async function init(mode){worker?.terminate();worker=new Worker('../hand-pnp-photo/tracker.mjs?task=hands&delegate=GPU',{type:'module'});worker.onmessage=({data})=>{if(!pending)return;const p=pending;pending=null;clearTimeout(p.timer);data.type==='error'?p.reject(Error(data.message)):p.resolve(data);};worker.onerror=e=>{if(pending){clearTimeout(pending.timer);pending.reject(Error(e.message||'Tracker failed'));pending=null;}};await ask({type:'init'},[],60000);}
+function ask(d,tr=[],timeout=15000){return new Promise((resolve,reject)=>{const timer=setTimeout(()=>{pending=null;reject(Error('Hand tracker timed out'));},timeout);pending={resolve,reject,timer};worker.postMessage(d,tr);});}
+const detections=[];
+async function process(detection,index,timeMs,isPhoto=false){
+detections.push({index,timeMs,isPhoto,...detection});
+lastResult=null;const frameResults=[];
+for(const [view,sheet]of Object.entries(sheets)){const ctx=sheet.getContext('2d');ctx.fillStyle='#101a24';ctx.fillRect(0,0,1920,1080);ctx.fillStyle='white';ctx.font='bold 22px Arial';ctx.fillText((isPhoto?'Photo 2':'Clip '+(timeMs/1000).toFixed(2)+' s')+' | '+group+' | '+depthMode+' | '+view.toUpperCase()+' | same camera for all variants',18,29);ctx.font='18px Arial';ctx.fillText('Source image',18,65);const h=Math.min(455,620/aspect),w=h*aspect;ctx.drawImage(source,(640-w)/2,75,w,h);ctx.font='16px Arial';ctx.fillStyle='#bad1e2';ctx.fillText(view.startsWith('moving')?'Movement retained. Fixed inspection camera; not calibrated to actual eyes.':'Wrist anchored for finger comparison. First: eye-side FOV 90. No actual eye position in source.',18,1057);}
+for(let hi=0;hi<Math.max(1,Math.min(2,detection.landmarks.length));hi++){
+for(const [ci,cfg]of cases.entries()){
+const tile=ci+1,ox=(tile%3)*640,oy=Math.floor(tile/3)*510+55;
+for(const sheet of Object.values(sheets)){const ctx=sheet.getContext('2d');ctx.fillStyle='white';ctx.font='bold 19px Arial';ctx.fillText('#'+cfg.id+' '+(cfg.id>100?cfg.label:(cfg.method==='archive'?'Original':group==='old'?'Screenshot':'New photo')+' | '+(cfg.curlGain?'bend x1.2':cfg.depthHint===.6?'depth x0.6':'2D + limits')),ox+15,oy+10);}
+if(!detection.landmarks.length){for(const sheet of Object.values(sheets)){const ctx=sheet.getContext('2d');ctx.fillStyle='#ffbc8d';ctx.fillText('No hand detected',ox+150,oy+200);}rows.push({index,timeMs,id:cfg.id,noDetection:true,isPhoto});continue;}
+const model=models[cfg.method==='archive'?'archive':'reference'],{rig,tips,ref}=model,caseRows=[];
+const lm=detection.landmarks[hi],world=detection.worldLandmarks[hi],S=detection.handedness[hi][0].categoryName==='Left'?'L':'R',length=ref[S][9].distanceTo(ref[S][0]),observed=new T.Vector3(world[9].x-world[0].x,world[9].y-world[0].y,world[9].z-world[0].z).length();
+const stateKey=cfg.id+':'+S,previousTime=frameTimes[stateKey],elapsed=(timeMs-previousTime)/1000;const dt=Number.isFinite(elapsed)&&elapsed>0?Math.min(elapsed,.1):1/30;if(isPhoto||!Number.isFinite(elapsed)||elapsed>.35||elapsed<=0){delete drivers[stateKey];delete depthStates[stateKey];}frameTimes[stateKey]=timeMs;if(!drivers[stateKey]){drivers[stateKey]=directDriver(rig,tips);depthStates[stateKey]=new PalmSweepDepth();}
+rig.root.scale.setScalar(1);rig.root.position.set(0,0,0);rig.root.updateMatrixWorld(true);const initial=sizeDepth(imagePalmSize(lm,aspect),{size:model.span*focal,depth:1},.5);let pts=liftCameraLandmarks(lm,world,aspect,aspect,initial,length/observed).map(p=>new T.Vector3().fromArray(p));if(cfg.falseDepth)pts=reduceFalseDepthBends(pts,lm,source.width,source.height,true);let q=new T.Quaternion().setFromRotationMatrix(frame(pts).multiply(frame(ref[S]).invert())),fitError=null,pnpHeld=false,pnpValid=null;
+if(cfg.depth==='PnP'){const key=cfg.id+S,previous=poseStates[key],fresh=detection.handedness[hi][0].score>=.5?solvePalmPose(cv,[0,5,9,13,17].map(i=>ref[S][i].clone().sub(ref[S][0]).toArray()),lm,aspect,focal,previous):null;const fit=fresh??previous;pnpValid=!!fresh;pnpHeld=!fresh&&!!previous;if(fresh)poseStates[key]=fresh;if(!fit){rows.push({index,timeMs,id:cfg.id,isPhoto,S,rejected:true,reason:'No valid PnP pose'});for(const sheet of Object.values(sheets)){const ctx=sheet.getContext('2d');ctx.fillStyle='#ffba9a';ctx.fillText('No valid PnP pose',ox+130,oy+180);}continue;}fitError=fit.error;const r=fit.matrix;q.setFromRotationMatrix(new T.Matrix4().set(r[0],r[1],r[2],0,-r[3],-r[4],-r[5],0,-r[6],-r[7],-r[8],0,0,0,0,1));pts=liftCameraLandmarks(lm,world,aspect,aspect,fit.translation[2],length/observed).map(p=>new T.Vector3().fromArray(p));pts[0].set(fit.translation[0],-fit.translation[1],-fit.translation[2]);}
+else{const m=pts.map(p=>p.clone());for(const i of [5,9,13,17])m[i].copy(ref[S][i]).sub(ref[S][0]).applyQuaternion(q).add(pts[0]);const obs=palmObservation(lm,m,aspect,focal),depth=depthStates[stateKey].update(S,obs,null,-pts[0].z,timeMs),delta=pts[0].clone().multiplyScalar((depth+pts[0].z)/-pts[0].z);pts.forEach(p=>p.add(delta));}
+// Experimental depth-hint gain: palm fixed; change relative depth along each finger.
+if(cfg.depthHint!==undefined)for(let f=0;f<5;f++){const base=1+4*f,z=pts[base].z;for(let k=1;k<=3;k++)pts[base+k].z=z+(pts[base+k].z-z)*cfg.depthHint;}
+if(cfg.postDepthCorrection)pts=reduceFalseDepthBends(pts,lm,source.width,source.height,true);
+// Optional bend gain changes successive 3D segment angles, retaining input segment lengths.
+if(cfg.curlGain){for(let f=1;f<5;f++){const b=1+4*f,dirs=[1,2,3].map(k=>pts[b+k].clone().sub(pts[b+k-1])),changed=[dirs[0].clone()];for(let k=1;k<3;k++){const a=dirs[k-1].clone().normalize(),v=dirs[k].clone().normalize(),axis=new T.Vector3().crossVectors(a,v).normalize(),ang=a.angleTo(v);changed.push(changed[k-1].clone().normalize().applyAxisAngle(axis,ang*cfg.curlGain).multiplyScalar(dirs[k].length()));}for(let k=1;k<=3;k++)pts[b+k].copy(pts[b+k-1]).add(changed[k-1]);}}
+if(cfg.straightDepth){const corrected=reduceFalseDepthBends(pts,lm,source.width,source.height,true);pts=pts.map((p,i)=>p.clone().lerp(corrected[i],cfg.straightDepth));}
+const driver=drivers[stateKey],result=driver(pts,S,q,dt,{noiseDegrees:0,smoothingMs:0,staticInput:false,postCaps:!!cfg.postCaps,postCoupling:cfg.postCoupling||0,lockUpper:!!cfg.lockUpper,baseSplay:!!cfg.baseSplay,upperCoupling:cfg.upperCoupling||0,thickness:cfg.thickness||1,tipInset:0,thumbOpposition:cfg.thumbOpposition||0,fitImage:cfg.method==='rays',experiment:cfg,fitAngles:cfg.method==='angles',lm,width:source.width,height:source.height});
+
+for(const m of rig.parts)m.visible=new RegExp('^'+S+'(Hand|Thumb|Index|Middle|Ring|Pinky)').test(m.name);
+lastResult=result;frameResults.push({side:S,audit:result.finalAudit});const p=result.points,curls=[],extension=[];for(let f=0;f<5;f++){const b=1+4*f,d=[1,2,3].map(k=>p[b+k].clone().sub(p[b+k-1]));curls.push([d[0].angleTo(d[1])*180/Math.PI,d[1].angleTo(d[2])*180/Math.PI]);extension.push(p[b+3].distanceTo(p[b])/d.reduce((s,v)=>s+v.length(),0));}
+const tipGap=p[4].distanceTo(p[8])/length,observedGap=Math.hypot((lm[4].x-lm[8].x)*aspect,lm[4].y-lm[8].y)/Math.hypot((lm[0].x-lm[9].x)*aspect,lm[0].y-lm[9].y);
+const projection=p.map(v=>({x:.5+v.x/-v.z*focal/aspect,y:.5-v.y/-v.z*focal})),lmSpan=Math.hypot((lm[9].x-lm[0].x)*aspect,lm[9].y-lm[0].y),reprojection=Math.sqrt(projection.reduce((s,v,i)=>s+((v.x-lm[i].x)*aspect)**2+(v.y-lm[i].y)**2,0)/21)/lmSpan;
+rows.push({index,timeMs,id:cfg.id,isPhoto,S,spacingAudit:result.spacingAudit,finalAudit:result.finalAudit,fitPoints:result.fitPoints,baseSplayAudit:result.baseSplayAudit,baseBefore:result.baseBefore,baseAfter:result.baseAfter,depthMode,fitError,pnpValid,pnpHeld,palmQuaternion:q.toArray(),palmLength:length,curls,extension,tipGap,observedGap,reprojection,points:p.map(v=>v.toArray()),confidence:detection.handedness[hi][0].score});
+// Two inspection modes: fixed wrist for articulation, and uncentered movement.
+const scale=.09/length;
+for(const [view,sheet]of Object.entries(sheets)){
+const moving=view.startsWith('moving');rig.root.scale.setScalar(scale);rig.root.position.set(0,0,0);if(!moving)rig.root.position.copy(p[0]).multiplyScalar(-scale).add(new T.Vector3(0,-.07,0));rig.root.updateMatrixWorld(true);
+camera.up.set(0,1,0);camera.fov=(view==='first'||view==='movingFirst')?90:65;
+if(view==='movingFirst')camera.position.set(0,.18,-1.35);else if(view==='movingSide')camera.position.set(.9,.15,-.55);else if(view==='first')camera.position.set(0,.09,-.22);else if(view==='side')camera.position.set(.32,.03,0);else camera.position.set(0,.03,.32);
+if(moving)camera.lookAt(0,-.05,-.5);else camera.lookAt(0,.015,0);camera.updateProjectionMatrix();camera.updateMatrixWorld(true);renderer.render(model.scene,camera);const ctx=sheet.getContext('2d');if(detection.landmarks.length>1){ctx.drawImage(renderer.domElement,ox+hi*320,oy+135,320,235);ctx.fillStyle='#79eadb';ctx.fillText(S+' hand',ox+hi*320+15,oy+120);}else ctx.drawImage(renderer.domElement,ox,oy+25);
+}
+}
+}
+compositeContext.drawImage(sheets.first,0,40,640,510,0,0,640,510);
+compositeContext.drawImage(sheets.first,640,40,640,510,640,0,640,510);
+compositeContext.drawImage(sheets.side,640,40,640,510,0,510,640,510);
+compositeContext.drawImage(sheets.front,640,40,640,510,640,510,640,510);
+out.textContent=frameResults.length?(live?'LIVE · ':isPhoto?'Photo · ':'Replay · ')+frameResults.map(({side,audit:a})=>`${side}: ${a.status} | image gap ${a.observedPixels.toFixed(1)} px | 3D tip gap ${a.gap===null?'—':(a.gap*1000).toFixed(3)+' mm (model scale)'}\n`+a.after.map((v,i)=>`${fingers[i+1]}: bend ${v.flex.toFixed(1)}°, sideways ${v.splay.toFixed(1)}°`).join(' · ')).join('\n'):(live?'LIVE · Show one or both hands to the camera.':'No hand detected');
+rows.length=0;detections.length=0;
+}
+let playing=false,photoMode=false;
+function reset(){for(const k of Object.keys(frameTimes))delete frameTimes[k];for(const k of Object.keys(drivers))delete drivers[k];for(const k of Object.keys(depthStates))delete depthStates[k];}
+function bounded(id,min,max,fallback){const el=document.getElementById(id),raw=Number(el.value),v=Math.min(max,Math.max(min,Number.isFinite(raw)?raw:fallback));el.value=v;return v;}
+function controls(){cfg.crossingSplay=bounded('crossingSplay',0,45,40);cfg.adjacentFingers=document.getElementById('adjacentFingers').checked;cfg.adjacentThreshold=bounded('adjacentThreshold',10,50,38)/100;cfg.fingerSpacing=document.getElementById('fingerSpacing').checked;cfg.spacingRange=bounded('spacingRange',0,45,30);cfg.fingerJitter=document.getElementById('fingerJitter').checked;cfg.palmJitter=document.getElementById('palmJitter').checked;cfg.fingerDeadzone=bounded('fingerDeadzone',0,5,1.5);cfg.fingerResponseMs=bounded('fingerResponseMs',0,150,45);cfg.palmDeadzone=bounded('palmDeadzone',0,3,.8);cfg.palmResponseMs=bounded('palmResponseMs',0,150,45);cfg.jointLimits=document.getElementById('limits').checked;cfg.contactEnabled=document.getElementById('contact').checked;cfg.contactEnterPx=bounded('enter',0,150,55);cfg.contactReleasePx=Math.max(cfg.contactEnterPx,bounded('release',0,200,75));document.getElementById('release').value=cfg.contactReleasePx;cfg.mcpLimits=[0,1,2,3].map(i=>({extension:bounded('ext'+i,0,40,30),flexion:bounded('flex'+i,10,110,90),splay:bounded('side'+i,0,45,25)}));cfg.thumbMcpCap=bounded('thumbMcp',10,90,70);cfg.thumbIpCap=bounded('thumbIp',10,100,80);}
+for(const input of document.querySelectorAll('#settings input'))input.addEventListener('change',()=>{controls();reset();});
+document.getElementById('reset').onclick=()=>{document.getElementById('crossingSplay').value=40;document.getElementById('adjacentFingers').checked=true;document.getElementById('adjacentThreshold').value=38;document.getElementById('fingerSpacing').checked=true;document.getElementById('spacingRange').value=30;for(const id of ['fingerJitter','palmJitter'])document.getElementById(id).checked=true;for(const [id,value]of Object.entries({fingerDeadzone:1.5,fingerResponseMs:45,palmDeadzone:.8,palmResponseMs:45}))document.getElementById(id).value=value;document.getElementById('limits').checked=true;document.getElementById('contact').checked=true;document.getElementById('enter').value=55;document.getElementById('release').value=75;for(let i=0;i<4;i++){document.getElementById('ext'+i).value=30;document.getElementById('flex'+i).value=90;document.getElementById('side'+i).value=25;}document.getElementById('thumbMcp').value=70;document.getElementById('thumbIp').value=80;controls();reset();};
+function stopLive(){liveEpoch++;live=false;liveStream?.getTracks().forEach(t=>t.stop());liveStream=null;liveVideo.pause();liveVideo.srcObject=null;liveVideo.removeAttribute('src');worker?.terminate();worker=null;if(pending){clearTimeout(pending.timer);pending.reject(Error('Camera stopped'));pending=null;}document.getElementById('stopCamera').disabled=true;document.getElementById('startCamera').disabled=false;cameraStatus.textContent='Camera stopped';reset();}
+async function listCameras(){if(!navigator.mediaDevices?.enumerateDevices)return;const select=document.getElementById('cameraDevice'),prior=select.value;const devices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');select.replaceChildren(new Option('Default camera',''));for(const [i,d]of devices.entries())select.add(new Option(d.label||'Camera '+(i+1),d.deviceId));select.value=prior;}
+async function startLive(){
+ stopLive();const token=liveEpoch;playing=false;photoMode=false;document.getElementById('startCamera').disabled=true;document.getElementById('stopCamera').disabled=false;
+ try{
+  cameraStatus.textContent='Opening camera…';
+  {if(!navigator.mediaDevices?.getUserMedia)throw Error('Camera requires localhost or HTTPS.');const id=document.getElementById('cameraDevice').value;const received=await navigator.mediaDevices.getUserMedia({audio:false,video:{...(id?{deviceId:{exact:id}}:{}),width:{ideal:960},height:{ideal:720},frameRate:{ideal:30}}});if(token!==liveEpoch){received.getTracks().forEach(t=>t.stop());return;}liveStream=received;liveVideo.srcObject=received;}
+  await liveVideo.play();if(token!==liveEpoch)return;live=true;reset();cameraStatus.textContent='Loading hand tracking…';await init('VIDEO');if(token!==liveEpoch)return;await listCameras();liveFrame=0;cameraStatus.textContent='LIVE · camera connected';
+  let lastVideo=-1,windowStart=performance.now(),count=0;
+  async function tick(){if(token!==liveEpoch||!live)return;try{if(liveVideo.readyState<2||liveVideo.currentTime===lastVideo){requestAnimationFrame(tick);return;}lastVideo=liveVideo.currentTime;source.width=Math.min(720,liveVideo.videoWidth);source.height=Math.round(source.width*liveVideo.videoHeight/liveVideo.videoWidth);aspect=source.width/source.height;const ctx=source.getContext('2d');ctx.save();if(document.getElementById('mirrorCamera').checked){ctx.translate(source.width,0);ctx.scale(-1,1);}ctx.drawImage(liveVideo,0,0,source.width,source.height);ctx.restore();const bitmap=await createImageBitmap(source),time=performance.now(),d=await ask({type:'frame',bitmap,time},[bitmap]);if(token!==liveEpoch)return;controls();await process(d,liveFrame++,time,false);count++;const now=performance.now();if(now-windowStart>1000){cameraStatus.textContent='LIVE · '+Math.round(count*1000/(now-windowStart))+' tracking FPS · '+d.landmarks.length+' hand(s)';count=0;windowStart=now;}requestAnimationFrame(tick);}catch(e){if(token===liveEpoch){stopLive();cameraStatus.textContent='Camera/tracking error: '+e.message;}}}
+  tick();
+ }catch(e){if(token===liveEpoch){stopLive();cameraStatus.textContent='Could not start camera: '+e.message;}}
+}
+document.getElementById('startCamera').onclick=()=>startLive();document.getElementById('stopCamera').onclick=()=>{stopLive();out.textContent='Camera stopped. Click Start camera to reconnect.';};document.getElementById('cameraDevice').onchange=()=>{if(live)startLive();};document.getElementById('mirrorCamera').onchange=reset;window.addEventListener('pagehide',stopLive);
+listCameras().catch(()=>{});
+controls();reset();out.textContent='Ready. Click Start camera and show one or both hands.';
+}catch(e){out.textContent=String(e.stack);console.error(e)}
+
+function extendShellTips(rig,extra){
+ rig.root.updateMatrixWorld(true);
+ for(const S of ['L','R'])for(const [f,n]of ['Thumb','Index','Middle','Ring','Pinky'].entries()){
+  const a=rig.photoReference.targets[S][3+4*f],b=rig.photoReference.targets[S][4+4*f],axis=b.clone().sub(a).normalize(),target=a.distanceTo(b)*(1+extra[f]);
+  const meshes=rig.parts.filter(m=>m.name.startsWith(S+n+'3__'));let max=0;
+  for(const m of meshes){const attr=m.geometry.attributes.position;for(let i=0;i<attr.count;i++)max=Math.max(max,new T.Vector3().fromBufferAttribute(attr,i).applyMatrix4(m.matrixWorld).sub(a).dot(axis));}
+  if(!(max>0))continue;const ratio=target/max;
+  for(const m of meshes){m.geometry=m.geometry.clone();const attr=m.geometry.attributes.position,inv=m.matrixWorld.clone().invert();for(let i=0;i<attr.count;i++){const v=new T.Vector3().fromBufferAttribute(attr,i).applyMatrix4(m.matrixWorld),d=v.clone().sub(a).dot(axis);if(d>0)v.addScaledVector(axis,d*(ratio-1));v.applyMatrix4(inv);attr.setXYZ(i,v.x,v.y,v.z);}attr.needsUpdate=true;m.geometry.computeVertexNormals();m.geometry.computeBoundingBox();m.geometry.computeBoundingSphere();}
+ }
+}
