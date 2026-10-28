@@ -1,0 +1,12 @@
+<!doctype html><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js"}}</script><pre id="result">Loading actual head mesh…</pre><script type="module">
+import * as T from 'three';import {CombinedHead} from './head-model.mjs?v=demo9';import {updateFaceDots} from './face-bindings.mjs?v=demo9';
+const scene=new T.Scene(),head=new CombinedHead(scene,()=>({}));await head.ready;
+if(!head.loaded)throw new Error(head.error);
+let maxGap=0,maxWeightError=0;const poses=[];
+for(const angle of [0,.6,-.8]){
+ head.group.rotation.y=angle;head.group.position.set(.03,.1,-.5);head.group.updateMatrixWorld(true);
+ const points=updateFaceDots(head.faceBindings);
+ head.faceBindings.forEach((binding,i)=>{const {mesh,ids,weights}=binding,triangle=new T.Triangle(...ids.map(j=>mesh.getVertexPosition(j,new T.Vector3()).applyMatrix4(mesh.matrixWorld)));maxGap=Math.max(maxGap,triangle.closestPointToPoint(points[i],new T.Vector3()).distanceTo(points[i]));maxWeightError=Math.max(maxWeightError,Math.abs(weights.x+weights.y+weights.z-1));});poses.push(angle);
+}
+result.textContent=JSON.stringify({pass:head.faceBindings.length===468&&maxGap<1e-8&&maxWeightError<1e-8,dots:head.faceBindings.length,poses,maxSurfaceGap:maxGap,maxWeightError});
+</script>

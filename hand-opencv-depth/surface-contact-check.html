@@ -1,0 +1,13 @@
+<!doctype html><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js"}}</script><pre id="result">Running</pre><script type="module">
+import * as T from 'three';import {surfaceContact,supportedContact} from './surface-contact.mjs?v=demo9';
+const tests=[];
+for(const rotation of [0,.6,1.4]){
+ const q=new T.Quaternion().setFromAxisAngle(new T.Vector3(0,1,0),rotation),offset=new T.Vector3(.02,.1,-.5),transform=p=>p.applyQuaternion(q).add(offset);
+ const triangle=new T.Triangle(...[[-1,-1,0],[1,-1,0],[0,1,0]].map(a=>transform(new T.Vector3(...a))));
+ const vertices=[[0,0,.012],[.01,0,.02],[0,.01,.025]].map(a=>transform(new T.Vector3(...a))),before=vertices[0].distanceTo(vertices[1]);
+ const fit=surfaceContact(vertices,[triangle]);const moved=vertices.map(p=>p.clone().add(fit.delta));
+ const gap=triangle.closestPointToPoint(moved[0],new T.Vector3()).distanceTo(moved[0]);
+ const support=supportedContact(vertices,transform(new T.Vector3()),new T.Vector3(0,0,1).applyQuaternion(q));const normal=new T.Vector3(0,0,1).applyQuaternion(q),plane=transform(new T.Vector3());const minimum=Math.min(...vertices.map(v=>v.clone().add(support.delta).sub(plane).dot(normal)));tests.push({rotation,gap,supportPlaneClearance:minimum,rigidError:Math.abs(before-moved[0].distanceTo(moved[1])),pass:Math.abs(minimum-.0003)<1e-9&&Math.abs(gap-.0003)<1e-9&&Math.abs(before-moved[0].distanceTo(moved[1]))<1e-9});
+}
+result.textContent=JSON.stringify({pass:tests.every(t=>t.pass),tests});
+</script>

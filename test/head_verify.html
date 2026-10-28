@@ -1,0 +1,15 @@
+<!doctype html><meta charset="utf-8"><title>Face worker verification</title>
+<style>body{background:#242b31;color:white;font:16px system-ui;padding:24px}img{max-width:400px;width:100%}pre{white-space:pre-wrap}</style>
+<h1>Face worker verification</h1><p>?img=../woman_hands.jpg (default) · ?w=384 capture width · ?fov=60</p><pre id="status">Loading real face model…</pre><img id="photo">
+<script type="module">
+// Sends one still through docs/head/worker.mjs exactly as HeadView does (resized to ?w= px wide) and prints the result.
+const Q=new URLSearchParams(location.search),status=document.querySelector('#status'),photo=document.querySelector('#photo');
+photo.src=Q.get('img')||'../woman_hands.jpg';const W=+Q.get('w')||384,hfov=(+Q.get('fov')||60)*Math.PI/180;
+const worker=new Worker(new URL('../head/worker.mjs',import.meta.url),{type:'module'});
+const timeout=setTimeout(()=>{status.textContent='FAIL: timeout';worker.terminate()},60000);
+worker.onerror=e=>{status.textContent='FAIL: '+e.message;clearTimeout(timeout)};
+worker.onmessage=async({data})=>{
+  if(data.type==='ready'){await photo.decode();const w=Math.min(W,photo.naturalWidth);const frame=await createImageBitmap(photo,{resizeWidth:w,resizeHeight:Math.round(w*photo.naturalHeight/photo.naturalWidth)});worker.postMessage({frame,ts:Math.floor(performance.now()),hfov},[frame]);}
+  else{clearTimeout(timeout);status.textContent=(data.type==='pose'&&data.pose?'PASS: real face detected · ':'FAIL: ')+JSON.stringify(data,(k,v)=>typeof v==='number'?+v.toFixed(4):v);worker.terminate();}
+};
+</script>

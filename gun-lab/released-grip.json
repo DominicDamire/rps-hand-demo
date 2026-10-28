@@ -1,0 +1,119 @@
+{
+  "schema": "gun-grip-lab",
+  "version": 1,
+  "rig": "sweep-doll",
+  "name": "My gun grip",
+  "side": "R",
+  "hand": {
+    "position": [
+      -37,
+      65,
+      -185
+    ],
+    "rotation": [
+      0,
+      0,
+      0
+    ],
+    "scale": 1
+  },
+  "gun": {
+    "position": [
+      -18,
+      16,
+      -18
+    ],
+    "rotation": [
+      0,
+      180,
+      0
+    ],
+    "scale": 0.82
+  },
+  "thickness": 1.3,
+  "angles": {
+    "Thumb1": [
+      24,
+      -8,
+      -67
+    ],
+    "Thumb2": [
+      0,
+      -46,
+      0
+    ],
+    "Thumb3": [
+      1,
+      -19,
+      -14
+    ],
+    "Index1": [
+      0,
+      0,
+      0
+    ],
+    "Index2": [
+      -3,
+      0,
+      0
+    ],
+    "Index3": [
+      -19,
+      0,
+      0
+    ],
+    "Middle1": [
+      65,
+      0,
+      0
+    ],
+    "Middle2": [
+      90,
+      0,
+      0
+    ],
+    "Middle3": [
+      1,
+      0,
+      0
+    ],
+    "Ring1": [
+      65,
+      0,
+      0
+    ],
+    "Ring2": [
+      90,
+      0,
+      0
+    ],
+    "Ring3": [
+      1,
+      0,
+      0
+    ],
+    "Pinky1": [
+      65,
+      0,
+      0
+    ],
+    "Pinky2": [
+      90,
+      0,
+      0
+    ],
+    "Pinky3": [
+      1,
+      0,
+      0
+    ]
+  },
+  "trigger": {
+    "released": 10,
+    "pressed": 75,
+    "on": 0.7,
+    "off": 0.35,
+    "smoothing": 35,
+    "gain": 1
+  }
+}

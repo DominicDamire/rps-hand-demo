@@ -1,0 +1,15 @@
+<!doctype html><meta charset="utf-8"><pre id="result">Checking stairs...</pre>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js"}}</script>
+<script type="module">
+import * as THREE from 'three';import {DustMap} from './map.mjs?v=15';
+const out=document.getElementById('result');
+function fixture(){const map=new DustMap(new THREE.Scene());map.ready=true;const box=(x,y,z,w,h,d)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshBasicMaterial({side:THREE.DoubleSide}));m.position.set(x,y,z);m.updateMatrixWorld(true);map.meshes.push(m);};box(0,-.1,0,20,.2,20);return {map,box};}
+try{
+ const {map,box}=fixture();box(0,.25,-1.5,4,.5,1);box(0,.5,-2.5,4,1,1);box(0,2,-4,4,4,1);
+ const p=new THREE.Vector3(0,1.65,0);for(let i=0;i<25;i++)map.move(p,0,-.1);
+ if(p.z> -2.4||Math.abs(p.y-2.65)>.01)throw Error('Stairs blocked: '+p.toArray());
+ for(let i=0;i<30;i++)map.move(p,0,-.1);if(p.z< -3.3)throw Error('Passed tall wall');
+ const low=fixture();low.box(0,.25,-1.5,4,.5,1);low.box(0,2,-1.5,4,.2,1);const q=new THREE.Vector3(0,1.65,0);for(let i=0;i<20;i++)low.map.move(q,0,-.1);if(q.z< -1)throw Error('Entered low ceiling');
+ out.textContent=JSON.stringify({status:'PASS',stairs:'two 0.5m steps climbed',wall:'blocked',lowCeiling:'blocked',position:p.toArray()});
+}catch(e){out.textContent='FAIL '+e.message;}
+</script>

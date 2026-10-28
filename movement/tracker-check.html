@@ -1,0 +1,20 @@
+<!doctype html><meta charset="utf-8"><title>Movement tracker check</title><pre id="result">Loading tracker…</pre><script type="module">
+import {measureHand} from './controller.mjs';
+import {measurePointer,SwipeController,indexExtension} from './swipe.mjs?v=10';
+const output=document.getElementById('result'),worker=new Worker('./tracker.mjs?v=10',{type:'module'});let image,started,n=0,times=[];
+const timeout=setTimeout(()=>{output.textContent='FAIL: tracker timed out';worker.terminate();},60000);
+worker.onerror=e=>{clearTimeout(timeout);output.textContent='FAIL: '+e.message;};
+worker.onmessage=async({data})=>{try{
+ if(data.type==='error')throw Error(data.message);
+ if(data.type==='ready'){image=new Image();image.src='../'+(new URLSearchParams(location.search).get('fixture')||'victory.jpg');await image.decode();}
+ if(data.type==='result'){
+   times.push(performance.now()-started);n++;
+   const sample=measureHand(data.landmarks[0],data.worldLandmarks[0],image.width/image.height);
+   
+   const pointer=measurePointer(data.landmarks[0],data.worldLandmarks[0],image.width/image.height);const control=new SwipeController();control.update(pointer,0);const moved=control.update({...pointer,x:(pointer?.x??.5)+.04},40);
+   if(n===8){clearTimeout(timeout);output.textContent=JSON.stringify({status:'RESULT',frames:n,hands:data.landmarks.length,sample,pointer,imageExtension:indexExtension((data.landmarks[0]||[]).map(p=>({x:p.x,y:p.y/(image.width/image.height),z:0}))),active:moved.active,movementX:moved.dx,meanInferenceMs:times.slice(1).reduce((a,b)=>a+b)/7},null,2);worker.terminate();return;}
+ }
+ const bitmap=await createImageBitmap(image,{resizeWidth:384,resizeHeight:Math.round(384*image.height/image.width),resizeQuality:'low'});started=performance.now();worker.postMessage({type:'frame',bitmap,time:started},[bitmap]);
+}catch(e){clearTimeout(timeout);output.textContent='FAIL: '+e.message;worker.terminate();}};
+worker.postMessage({type:'init'});
+</script>

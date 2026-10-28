@@ -1,0 +1,17 @@
+<!doctype html><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js"}}</script><pre>Loading</pre><script type="module">
+import * as T from 'three';import {reduceFalseDepthBends} from './depth-lines.mjs?v=14';
+const make=()=>Array.from({length:21},()=>({x:.5,y:.6}));let bend=0,pixelError=0,curledChange=0,thumbChange=0;
+for(const perspective of [true,false]){
+ const lm=make();lm[0]={x:.5,y:.8};lm[9]={x:.5,y:.5};for(let k=0;k<4;k++)lm[5+k]={x:.4,y:.5-k*.14};
+ const p=lm.map((v,i)=>{const z=i===6?-.42:i===7?-.57:-.5;return new T.Vector3((v.x-.5)*(perspective?-z:1),(.5-v.y)*(perspective?-z:1),z);});
+ const result=reduceFalseDepthBends(p,lm,480,480,perspective);
+ for(const k of [6,7]){bend=Math.max(bend,result[k].clone().sub(result[k-1]).angleTo(result[k+1].clone().sub(result[k])));const scale=perspective?-result[k].z:1;pixelError=Math.max(pixelError,Math.abs(result[k].x/scale-(lm[k].x-.5)),Math.abs(result[k].y/scale-(.5-lm[k].y)));}
+ thumbChange=Math.max(thumbChange,...[1,2,3,4].map(i=>p[i].distanceTo(result[i])));
+ // A bent/contact finger with a projected reversal must retain its depth.
+ lm[7]={x:.46,y:.38};lm[8]={x:.51,y:.5};const curled=reduceFalseDepthBends(p,lm,480,480,perspective);curledChange=Math.max(curledChange,...[5,6,7,8].map(i=>p[i].distanceTo(curled[i])));
+}
+// A slightly imperfect 7-degree image line must not retain an invented depth kink.
+const mild=make();mild[0]={x:.5,y:.8};mild[9]={x:.5,y:.5};mild[5]={x:.4,y:.5};mild[6]={x:.4,y:.36};mild[7]={x:.4+.14*Math.sin(7*Math.PI/180),y:.36-.14*Math.cos(7*Math.PI/180)};mild[8]={x:mild[7].x+.14*Math.sin(7*Math.PI/180),y:mild[7].y-.14*Math.cos(7*Math.PI/180)};
+const mildPoints=mild.map((v,i)=>{const z=i===6?-.42:i===7?-.57:-.5;return new T.Vector3((v.x-.5)*-z,(.5-v.y)*-z,z);}),mildResult=reduceFalseDepthBends(mildPoints,mild,480,480),mildDepthError=Math.max(...[6,7].map(i=>Math.abs(mildResult[i].z+.5)));
+document.querySelector('pre').textContent=JSON.stringify({pass:bend<1e-6&&pixelError<1e-10&&curledChange===0&&thumbChange===0&&mildDepthError<1e-10,residualStraightBendDegrees:bend*180/Math.PI,pixelRayError:pixelError,curledChange,thumbChange,mildDepthError},null,2);
+</script>

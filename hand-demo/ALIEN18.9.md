@@ -1,0 +1,9 @@
+# Alien 18.9 — extended-hand reference
+
+Replaces the fixed wrist-distance interpretation of manual calibration. The user extends an arm toward the camera with the full open hand and face visible, sets the camera-to-wrist distance for that pose, and captures once. The button provides five seconds of preparation, followed by 1.5 seconds of sampling. At least eight fresh, confident samples with the entire hand and face visible are required. Unsteady or incomplete captures leave the previous reference unchanged.
+
+The saved reference size and camera distance remain unchanged until the user captures again. Current hand distance = saved distance × saved size / current size. A larger hand therefore moves toward the camera, and a smaller hand moves away; the model is not frozen at the calibration distance. A shared reference applies to both equal-sized model hands. The wrist-to-knuckle spans avoid conflating finger curl/spread with distance. Relative MediaPipe world XYZ compensates for span foreshortening; it does not provide an absolute camera distance. If the span is temporarily unusable, retain the last valid estimate. Distances have numeric safety bounds of 4 cm to 4 m.
+
+Reference and activation mode persist in the browser. The head reference distance remains manually adjustable, while head/shoulder rotation and X/Y motion continue. Capturing requires a visible face, but subsequent hand depth does not depend on face visibility, face size, elbows or shoulders. Contact fitting, head collision and back-wall shifts are bypassed in reference mode. No additional tracker, segmentation or OpenCV work is introduced. The separate sweep-calibration page remains unchanged.
+
+Validation: inverse-size near/far ratio, relative-Z tilt compensation, finger-curl independence, fixed reference across later frames, capture preparation/deadline, visible-face/full-hand checks and cancellation.
