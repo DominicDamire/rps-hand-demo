@@ -1,0 +1,109 @@
+<!doctype html><meta charset="utf-8" /><title>Held grip geometry check</title>
+<script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"
+    }
+  }
+</script>
+<style>
+  body {
+    font: 15px system-ui;
+    background: #15252d;
+    color: #bce8d0;
+    padding: 24px;
+  }
+  pre {
+    white-space: pre-wrap;
+  }
+</style>
+<h1>Held grip / geometry regression</h1>
+<pre id="result" role="status">Loading actual hand and gun…</pre>
+<script type="module">
+  import * as T from "three";
+  import { GripRig } from "./grip-rig.mjs?v=4";
+  import { heldAngles } from "./held-pose.mjs?v=4";
+  import { gunMaterials } from "./gun-materials.mjs?v=4";
+  import { loadProvidedProfile } from "./presets.mjs?v=2";
+  const out = document.getElementById("result");
+  try {
+    const profile = await loadProvidedProfile();
+    const scene = new T.Scene(),
+      g = await new GripRig(scene, profile).ready;
+    const materials = new Set();
+    g.model.traverse((m) => {
+      if (m.isMesh)
+        for (const mat of Array.isArray(m.material) ? m.material : [m.material])
+          materials.add(mat);
+    });
+    const checkMaterials = () => {
+      for (const m of materials) {
+        const glass = m.name === "Glass";
+        if (
+          m.transparent !== glass ||
+          m.depthWrite === glass ||
+          m.opacity !== 1
+        )
+          throw Error("Incorrect solid/glass rendering: " + m.name);
+      }
+    };
+    checkMaterials();
+    gunMaterials(g.model, true);
+    gunMaterials(g.model, false);
+    checkMaterials();
+    const relative = () => {
+        scene.updateMatrixWorld(true);
+        return g.hand.matrixWorld.clone().invert().multiply(g.gun.matrixWorld);
+      },
+      baseline = relative(),
+      fixed = Object.fromEntries(
+        ["Middle", "Ring", "Pinky"].flatMap((f) =>
+          [1, 2, 3].map((k) => [
+            f + k,
+            g.rig.joints["R" + f + k].quaternion.clone(),
+          ]),
+        ),
+      );
+    let drift = 0;
+    for (let i = 0; i <= 100; i++) {
+      g.assembly.position.set(Math.sin(i), i / 100, -i / 90);
+      g.assembly.rotation.set(i / 100, i / 90, -i / 80);
+      g.pose(heldAngles(profile, i / 100, 1 - i / 100), i / 100);
+      const m = relative();
+      drift = Math.max(
+        drift,
+        ...m.elements.map((v, j) => Math.abs(v - baseline.elements[j])),
+      );
+      for (const [n, q] of Object.entries(fixed))
+        if (g.rig.joints["R" + n].quaternion.angleTo(q) > 1e-6)
+          throw Error("Locked finger moved: " + n);
+    }
+    if (drift > 1e-7) throw Error("Grip transform drift");
+    const a = heldAngles(profile, 1, 1);
+    if (a.Index3[0] !== 69) throw Error("Index tip overbent");
+    g.assembly.rotation.set(0, Math.PI, 0);
+    scene.updateMatrixWorld(true);
+    const barrel = new T.Vector3(0, 0, -1).transformDirection(
+      g.gun.matrixWorld,
+    );
+    if (barrel.z > -0.99) throw Error("Neutral camera aim points backwards");
+    out.textContent = JSON.stringify(
+      {
+        status: "PASS",
+        opaqueGunAndGlassVerified: true,
+        poses: 101,
+        maxRelativeMatrixDrift: drift,
+        lockedJoints: 9,
+        indexMax: [a.Index1[0], a.Index2[0], a.Index3[0]],
+        thumbOpen: profile.thumbOpen.Thumb1,
+        thumbWrapped: profile.angles.Thumb1,
+        neutralBarrel: barrel.toArray(),
+      },
+      null,
+      2,
+    );
+  } catch (e) {
+    out.textContent = "FAIL: " + e.message;
+  }
+</script>

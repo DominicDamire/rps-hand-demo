@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Phone camera · Hand Pose Lab</title>
+  <link rel="stylesheet" href="lab.css?v=2">
+  <style>
+    body{max-width:600px;margin:auto;padding:20px}video{width:100%;max-height:60vh;background:#05080c;border-radius:12px;margin:18px 0}h1{font-size:24px}
+    input,select,button{font-size:16px}.pair{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end}.pair label{margin:0}.pair input{width:100%;box-sizing:border-box}
+    #status{min-height:2.8em;padding:10px;border:1px solid #39516a;border-radius:8px;background:#111c29}
+  </style>
+</head>
+<body>
+  <h1>Phone camera for your PC lab</h1>
+  <p id="description">This phone tracks the hands and sends landmark numbers to the paired PC. It works across different Wi-Fi networks and mobile data. Camera images stay on this phone.</p>
+  <div class="pair">
+    <label>Six-digit code from the PC<input id="pair" inputmode="numeric" autocomplete="off" maxlength="6" pattern="[0-9]{6}" placeholder="123456"></label>
+    <button id="useCode" type="button">Use code</button>
+  </div>
+  <label>Camera<select id="facing"><option value="user">Front camera</option><option value="environment">Back camera</option></select></label>
+  <div class="row"><button id="start" class="primary">Start camera</button><button id="stop" disabled>Stop camera</button></div>
+  <p id="status" role="status">Enter the PC code or scan its QR, then tap Start camera.</p>
+  <video id="video" autoplay playsinline muted></video>
+  <p>Keep this page open and the screen awake. The status above shows whether the link, camera, or tracker needs attention.</p>
+  <script type="module">
+    import {sendPhone} from './phone-link.mjs?v=demo9';
+    const $=id=>document.getElementById(id),params=new URLSearchParams(location.search);
+    if(params.get('body')==='1'){$('description').textContent='This phone tracks the head and upper body and sends landmark coordinates to the PC. Separate hand tracking is off. Camera images stay on this phone.';document.title='Phone camera · Full upper body';}
+    let stop=null,epoch=0;
+    const initial=(params.get('pair')||'').replace(/\D/g,'').slice(0,6);$('pair').value=initial;$('pair').setAttribute('value',initial);
+    if(initial)$('status').textContent='Code '+initial+' loaded. Tap Start camera and allow access.';
+    const code=()=>(($('pair').value||initial).replace(/\D/g,'').slice(0,6));
+    $('pair').oninput=()=>{$('pair').value=code();};
+    $('useCode').onclick=()=>{const value=code();if(value.length!==6){$('status').textContent='Enter all six digits shown on the PC.';return;}const url=new URL(location.href);url.searchParams.set('pair',value);history.replaceState(null,'',url);$('status').textContent='Code '+value+' ready. Tap Start camera.';};
+    const end=()=>{epoch++;stop?.();stop=null;$('start').disabled=false;$('facing').disabled=false;$('pair').disabled=false;$('useCode').disabled=false;$('stop').disabled=true;};
+    $('start').onclick=async()=>{
+      const value=code();if(value.length!==6){$('status').textContent='Enter the complete six-digit code from the PC.';return;}
+      const token=++epoch;$('start').disabled=true;$('facing').disabled=true;$('pair').disabled=true;$('useCode').disabled=true;$('stop').disabled=false;$('status').textContent='Connecting to the PC…';
+      try{const close=await sendPhone(value,$('video'),text=>$('status').textContent=text,$('facing').value);if(token!==epoch)close();else stop=close;}
+      catch(error){if(token===epoch){end();$('status').textContent='Could not start: '+error.message;}}
+    };
+    $('stop').onclick=()=>{end();$('status').textContent='Camera stopped. You can reconnect with the same code while the PC window remains open.';};
+    addEventListener('pagehide',()=>stop?.());
+  </script>
+</body>
+</html>

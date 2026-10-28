@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Live hand comparison · attached 2D lines vs current</title>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.186.0/examples/jsm/"}}</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{color-scheme:dark;font:16px system-ui;background:#101923;color:#e7f1fb}*{box-sizing:border-box}body{margin:0}header{padding:18px 24px;background:#172536;border-bottom:1px solid #3b5368}h1{font-size:1.45rem;margin:0 0 5px}p{margin:.5em 0;line-height:1.4}.muted{color:#a9bdcc}main{max-width:1500px;margin:auto;padding:16px;display:grid;grid-template-columns:minmax(230px,300px) minmax(0,1fr);gap:16px}aside,.panel{background:#182535;border:1px solid #344b5c;border-radius:12px;padding:14px}button,select,a.button{border:1px solid #547185;border-radius:7px;background:#24384b;color:#ecf8ff;font:inherit;padding:9px 12px;cursor:pointer}button:hover,a.button:hover{background:#315068}.primary{background:#9ee6c8;color:#102625}label{display:block;margin:12px 0 6px}select{width:100%}.actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}#preview{width:100%;max-height:260px;background:#080d13;border-radius:7px;object-fit:contain}#stats{font:12px/1.4 ui-monospace,monospace;white-space:pre-wrap;color:#a6eccc;min-height:55px}#status{color:#c6d4e3;min-height:24px}h2{font-size:1.05rem;margin:0 0 6px}.headings{display:grid;grid-template-columns:1fr 1fr;gap:8px;text-align:center;margin-bottom:9px}.headings>div{padding:9px;background:#22384b;border-radius:8px}.headings small{display:block;color:#b9cedb;font-weight:normal}#scene{width:100%;height:min(72vh,720px);min-height:400px;display:block;background:#192838;border-radius:9px}nav{display:flex;gap:15px;flex-wrap:wrap;margin-top:12px}a{color:#9ee6c8}.phonePair{background:#172536;color:#e7f1fb;border:1px solid #587188;border-radius:10px;max-width:min(90vw,460px)}.phonePair::backdrop{background:#0009}.qr{background:white;width:max-content;margin:12px auto;padding:6px}.phonePair a{overflow-wrap:anywhere}@media(max-width:800px){main{display:block}aside{margin-bottom:14px}#scene{min-height:350px;height:55vh}}
+</style>
+</head>
+<body>
+<header><h1>Live hand comparison</h1><p class="muted">One video feed and one tracker drive both versions at the same moment. Both use the same photo-sized hand and Sweep wrist placement.</p></header>
+<main>
+<aside>
+<h2>Video source</h2>
+<label for="cameraSelect">Camera</label><select id="cameraSelect"><option value="">Default camera</option></select>
+<div class="actions"><button class="primary" id="connect">Connect camera</button><button id="disconnect">Disconnect</button></div>
+<button id="phone">Connect iPhone camera</button>
+<p id="status" role="status">Loading the hand models…</p>
+<p id="stats" role="status">Tracking off</p>
+<video id="video" muted playsinline hidden></video><canvas id="preview" width="480" height="360" aria-label="Camera frame and tracked hand lines"></canvas>
+<nav><a href="hands-pure-lines.html?v=compare1">Pure lines alone</a><a href="hands-94.html?v=compare1">Current hands + head</a></nav>
+</aside>
+<section class="panel">
+<div class="headings"><div><strong>Attached 2D lines</strong><small>Measured line lengths · no finger depth, contact, limits or smoothing</small></div><div><strong>Current Sweep + #94</strong><small>Same input · #94 depth/curl help + final finger limits</small></div></div>
+<canvas id="scene" aria-label="Live side by side 3D hands"></canvas>
+<p class="muted">Finger roots stay attached on both sides. The left copies each measured 2D segment line at a flat depth, so its shells can change length. The right keeps model segment lengths and applies the current assistance. Head and gun are hidden to make the finger comparison clear.</p>
+</section>
+</main>
+<script type="module" src="compare-live.mjs?v=1"></script>
+</body></html>

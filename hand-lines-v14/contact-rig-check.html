@@ -1,0 +1,14 @@
+<!doctype html><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js"}}</script><pre>Loading</pre><script type="module">
+import * as T from 'three';import {DollRig} from '../doll/DollRig.js';import {buildTips} from './contact.mjs';import {directDriver} from './direct.mjs?v=13';
+try{const rig=new DollRig(new T.Scene(),{url:new URL('../doll.glb',location).href,report:new URL('../doll-report.json',location).href});await rig.ready;const tips=buildTips(rig),names=['Thumb','Index','Middle','Ring','Pinky'];let gap=0,tipError=0,attachmentError=0,planeError=0;
+for(const side of ['R','L'])for(const finger of [1,2])for(const rotation of [0,Math.PI/2]){
+const q=new T.Quaternion().setFromEuler(new T.Euler(.2,rotation,0)),origin=rig.rest[side+'Hand'].world,p=[new T.Vector3(0,0,-.6)];
+for(const f of names){for(let k=1;k<4;k++)p.push(rig.rest[side+f+k].world.clone().sub(origin).applyQuaternion(q).add(p[0]));p.push(rig.rest[side+f+'3'].world.clone().add(tips[side+f]).sub(origin).applyQuaternion(q).add(p[0]));}
+const lm=p.map(()=>({x:.8,y:.8}));lm[4]={x:.4,y:.4};lm[(finger+1)*4]={x:.405,y:.4};lm[5]={x:.3,y:.6};lm[17]={x:.6,y:.6};
+const result=directDriver(rig,tips)(p,side,q,1/60,{staticInput:true,noiseDegrees:0,contactPixels:8,thickness:1.3,tipInset:2,lm,width:480,height:480});gap=Math.max(gap,result.contactGap);
+for(const f of [0,finger]){const name=side+names[f],tip=rig.joints[name+'3'].localToWorld(tips[name].clone().multiplyScalar(1+.002/tips[name].length()));tipError=Math.max(tipError,tip.distanceTo(result.points[4+f*4]));for(let k=1;k<3;k++){const a=rig.joints[name+k].getWorldPosition(new T.Vector3()),b=rig.joints[name+(k+1)].getWorldPosition(new T.Vector3());attachmentError=Math.max(attachmentError,Math.abs(a.distanceTo(b)-rig.rest[name+k].world.distanceTo(rig.rest[name+(k+1)].world)));}}
+const i=1+finger*4,d=[0,1,2].map(k=>result.points[i+k+1].clone().sub(result.points[i+k]).normalize());planeError=Math.max(planeError,Math.abs(d[0].clone().cross(d[1]).dot(d[2])));
+}
+document.querySelector('pre').textContent=JSON.stringify({pass:gap<.001&&tipError<1e-8&&attachmentError<1e-8&&planeError<1e-8,maxContactGapMm:gap*1000,meshTipTargetError:tipError,attachmentError,planeError},null,2);
+}catch(e){document.querySelector('pre').textContent=e.stack;}
+</script>

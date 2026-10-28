@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Phone camera for the map</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #0f1116; color: #fff; font: 16px/1.4 system-ui, sans-serif; }
+  #wrap { display: grid; grid-template-rows: auto 1fr auto; height: 100%; }
+  header, footer { padding: 14px 16px; }
+  video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); background: #000; }
+  input { font: inherit; font-size: 28px; width: 130px; text-align: center; padding: 8px; border-radius: 10px; border: 0; }
+  button { font: inherit; font-weight: 700; padding: 12px 22px; border: 0; border-radius: 999px; background: #78ff78; color: #000; margin-left: 8px; }
+  #status { color: #a9edc7; margin-top: 8px; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
+</head>
+<body>
+<div id="wrap">
+  <header>
+    <div>This phone is the <b>camera</b> for the alien head running on the PC.</div>
+    <div style="margin-top:8px"><input id="code" inputmode="numeric" maxlength="3" placeholder="PC code"><button id="go">CONNECT</button></div>
+    <div id="status">enter the 3-digit code shown on the PC, or scan its QR</div>
+  </header>
+  <video id="cam" autoplay muted playsinline></video>
+  <footer style="color:#9aa4b8;font-size:13px">Keep this page open and the phone awake. Hold the phone so it sees your hands (and face for head look).</footer>
+</div>
+<script type="module">
+import { sendCamera } from "./camlink.mjs";
+const $ = id => document.getElementById(id);
+const q = new URLSearchParams(location.search).get("cam");
+let last = ""; try { last = localStorage.getItem("rpsh_last_cam") || ""; } catch {}
+$("code").value = q || last;
+async function go() {
+  const c = $("code").value.trim();
+  if (!/^\d{3}$/.test(c)) { $("status").textContent = "enter the 3-digit code from the PC"; return; }
+  try { localStorage.setItem("rpsh_last_cam", c); } catch {}
+  $("go").disabled = true;
+  try { await sendCamera(c, $("cam"), t => $("status").textContent = t); }
+  catch (e) { $("status").textContent = "camera error: " + e.message; $("go").disabled = false; }
+}
+$("go").onclick = go;
+if (q) go();   // opened from the PC's QR: connect right away (the camera prompt appears; allow it)
+</script>
+</body>
+</html>

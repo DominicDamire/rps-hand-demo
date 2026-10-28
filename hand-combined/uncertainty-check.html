@@ -1,0 +1,21 @@
+<!doctype html><script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js"}}</script><pre>Loading</pre><script type="module">
+import * as T from 'three';import {DirectionStabilizer} from './stability.mjs?v=17';import {fitContact,ContactLatch} from './contact-direct.mjs?v=17';
+const rad=Math.PI/180,up=new T.Vector3(0,1,0),target=up.clone().applyAxisAngle(new T.Vector3(1,0,0),50*rad),filter=new DirectionStabilizer();
+const update=(input,observation)=>filter.update('index',input,1/60,1,{observation,confirmDegrees:8});update(up,{});let spikeError=0;
+for(let i=0;i<40;i++){const observation={};for(let render=0;render<4;render++)spikeError=Math.max(spikeError,update(i%2?up:target,observation).angleTo(up)/rad);}
+const frame={};let duplicateError=0;for(let render=0;render<20;render++)duplicateError=Math.max(duplicateError,update(target,frame).angleTo(up)/rad);
+const next={};let response;for(let render=0;render<4;render++)response=update(target,next);const responseError=response.angleTo(target)/rad;
+let gap=0,lengthError=0,planeError=0;
+for(const finger of ['index','middle'])for(const rotation of [0,.8,1.57]){
+ const q=new T.Quaternion().setFromEuler(new T.Euler(.4,rotation,.3)),root=finger==='index'?.02:.035;
+ const thumb=[[-.04,0,0],[-.035,.045,.015],[-.01,.06,.025],[0,.075,.02]].map(v=>new T.Vector3(...v));
+ const chain=[[root,.08,0],[root,.04,0],[root-.025,.025,0],[root-.035,.04,0]].map(v=>new T.Vector3(...v));
+ const lengths=c=>c.slice(1).map((p,i)=>p.distanceTo(c[i])),a=lengths(thumb),b=lengths(chain),hinge=new T.Vector3(0,0,1).applyQuaternion(q);thumb.forEach(p=>p.applyQuaternion(q));chain.forEach(p=>p.applyQuaternion(q));
+ gap=Math.max(gap,fitContact(thumb,chain,a,b,hinge));for(const [c,l] of [[thumb,a],[chain,b]])lengths(c).forEach((v,i)=>lengthError=Math.max(lengthError,Math.abs(v-l[i])));for(const p of chain)planeError=Math.max(planeError,Math.abs(p.clone().sub(chain[0]).dot(hinge)));
+}
+const latch=new ContactLatch(),landmarks=Array.from({length:21},()=>({x:.9,y:.9}));landmarks[5]={x:.3,y:.4};landmarks[17]={x:.6,y:.4};landmarks[4]={x:.5,y:.5};landmarks[12]={x:.51,y:.5};
+const entered=latch.update({},landmarks,480,480,true);
+landmarks[12]={x:.8,y:.8};const released=latch.update({},landmarks,480,480,true);
+const adjustable=new ContactLatch();landmarks[12]={x:.53,y:.5};const customEntered=adjustable.update({},landmarks,480,480,true,15,20);landmarks[12]={x:.54,y:.5};const customHeld=adjustable.update({},landmarks,480,480,true,15,20);landmarks[12]={x:.55,y:.5};const customReleased=adjustable.update({},landmarks,480,480,true,15,20);
+document.querySelector('pre').textContent=JSON.stringify({pass:spikeError<1e-6&&duplicateError<1e-6&&responseError<1&&gap<.0005&&lengthError<1e-10&&planeError<1e-10&&entered===12&&released===null&&customEntered===12&&customHeld===12&&customReleased===null,spikeErrorDegrees:spikeError,duplicateFrameErrorDegrees:duplicateError,responseErrorAfterConfirmationDegrees:responseError,maxThumbContactGapMm:gap*1000,lengthError,planeError,contactEntryAndRelease:{entered,released,customEntered,customHeld,customReleased}},null,2);
+</script>

@@ -1,0 +1,18 @@
+/* Preserve the lab's dark canvas and green action color; make the game primary. */
+body{display:flex;flex-direction:column;height:100dvh;overflow:auto}#app{height:auto;flex:1;min-height:340px}body>nav{display:none}#move{display:block!important;font-size:16px}#stats{max-width:85%}
+#rps-panel{position:relative;background:#121820;border-top:1px solid #2b3644;padding:18px 24px;z-index:10;flex:none;font:14px/1.5 system-ui,sans-serif}#rps-panel button,.rps-recovery button{position:static;min-height:44px;border-radius:9px;font:inherit;padding:10px 16px;cursor:pointer;background:#283344;color:#fff}
+.rps-title{display:flex;justify-content:space-between;align-items:center;gap:12px;letter-spacing:.09em;font-size:12px}.rps-title span{color:#bac6d5}#rps-message{font-size:19px;margin:10px 0}.rps-readout{display:flex;gap:32px;margin:10px 0;color:#bbc8d6;font-size:12px;letter-spacing:.04em}.rps-readout b{display:block;color:white;font-size:20px}.rps-actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}#rps-panel #rps-play{background:#78ff78;color:#102010;font-weight:650}#rps-panel button:disabled{opacity:.5;cursor:wait}#rps-score{color:#bbc8d6;font-variant-numeric:tabular-nums}#rps-panel details{margin-top:12px;color:#bbc8d6}#rps-panel summary{cursor:pointer;padding:6px 0}#rps-panel p{max-width:85ch}a{color:#9cf2d4}button:focus-visible,a:focus-visible,summary:focus-visible{outline:2px solid #78ff78;outline-offset:3px}.rps-recovery{display:flex;gap:12px;align-items:center;justify-content:center;font-size:14px}
+@media(max-width:600px){#rps-panel{padding:14px 16px}#rps-message{font-size:16px}#app{min-height:390px;max-height:55dvh;grid-template-rows:1fr;grid-template-columns:1fr 1fr}.rps-readout{gap:22px}.rps-readout b{font-size:17px}#rps-score{flex-basis:100%}#hand,#stats{font-size:11px}.hud{left:6px;right:6px}#view{padding:8px;font-size:11px;left:6px;top:6px}}
+video,#still,#ov{object-fit:contain}#rps-panel #stats{font-size:12px;max-width:100%;line-height:1.5;color:#bbc8d6}.rps-recovery{flex-wrap:wrap}#status{font-size:16px}
+@media(max-width:600px){#app{height:320px;min-height:320px;max-height:none;flex:none}.rps-recovery{flex-direction:column}.rps-recovery a{max-width:140px}#status{padding:12px;font-size:14px}}
+/* Modes section below the game */
+@media(min-width:601px){#app{flex:1 0 calc(100dvh - 250px)}}#rps-panel{order:1}#modes{order:2;flex:none;background:#0f1116;border-top:1px solid #2b3644;padding:28px 24px 40px;font:14px/1.5 system-ui,sans-serif}
+#modes h2{margin:0 0 4px;font-size:22px}#modes>p{margin:0 0 18px;color:#bbc8d6;max-width:85ch}
+.modes-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.mode{display:flex;flex-direction:column;background:#121820;border:1px solid #2b3644;border-radius:10px;overflow:hidden}
+.mode>a img{display:block;width:100%;aspect-ratio:16/10;object-fit:cover;background:#1a1f2b}
+.mode h3{margin:12px 14px 4px;font-size:16px}.mode p{margin:0 14px 12px;color:#bbc8d6;flex:1}
+.mode-foot{display:flex;justify-content:space-between;align-items:center;margin:0 14px 14px;color:#9aa4b8;font-size:12px}
+.mode-open{display:inline-block;min-height:44px;line-height:24px;padding:10px 20px;border-radius:9px;background:#78ff78;color:#102010;font-weight:650;text-decoration:none}
+.rps-modes-link{margin-left:auto;font-size:13px}
+@media(max-width:600px){#modes{padding:22px 16px 32px}}

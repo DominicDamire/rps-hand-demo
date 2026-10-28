@@ -1,0 +1,95 @@
+<!doctype html><meta charset="utf-8" /><title>Gun Grip Lab tracker check</title>
+<style>
+  body {
+    background: #152229;
+    color: #cce5de;
+    font: 16px system-ui;
+    padding: 32px;
+  }
+  canvas {
+    max-width: 480px;
+  }
+  pre {
+    white-space: pre-wrap;
+  }
+</style>
+<h1>Gun Grip Lab / real tracker smoke check</h1>
+<p>
+  Runs the existing sweep tracker on the repository reference image. No camera
+  access.
+</p>
+<canvas id="preview"></canvas>
+<pre id="result" role="status">Loading reference image and tracker…</pre>
+<script type="module">
+  import { indexBends, TriggerTracker } from "./trigger.mjs";
+  import { defaults } from "./profile.mjs";
+  const out = document.querySelector("#result"),
+    canvas = document.querySelector("canvas"),
+    worker = new Worker(
+      new URL(
+        "../hand-touch-calibration/tracker.mjs?task=hands",
+        import.meta.url,
+      ),
+      { type: "module" },
+    );
+  const timer = setTimeout(() => {
+    out.textContent = "FAIL: tracker timed out";
+    worker.terminate();
+  }, 60000);
+  worker.onerror = (e) => {
+    out.textContent = "FAIL: " + e.message;
+    clearTimeout(timer);
+    worker.terminate();
+  };
+  worker.onmessage = async ({ data }) => {
+    try {
+      if (data.type === "error") throw Error(data.message);
+      if (data.type === "ready") {
+        const img = new Image();
+        img.src = "../test/count5.png";
+        await img.decode();
+        canvas.width = 480;
+        canvas.height = Math.round(
+          (480 * img.naturalHeight) / img.naturalWidth,
+        );
+        canvas
+          .getContext("2d")
+          .drawImage(img, 0, 0, canvas.width, canvas.height);
+        const bitmap = await createImageBitmap(canvas);
+        worker.postMessage({ type: "frame", bitmap, time: performance.now() }, [
+          bitmap,
+        ]);
+      }
+      if (data.type === "result") {
+        clearTimeout(timer);
+        const points = data.worldLandmarks?.[0],
+          bends = indexBends(points);
+        if (!bends) throw Error("Reference hand was not detected");
+        const tracker = new TriggerTracker(),
+          result = tracker.update(
+            points,
+            performance.now(),
+            defaults().trigger,
+          );
+        out.textContent = JSON.stringify(
+          {
+            status: "PASS",
+            hands: data.landmarks.length,
+            label: data.handedness[0][0].categoryName,
+            indexBends: bends,
+            inferenceMs: data.inferenceMs,
+            initialPressSuppressed: !result.fired,
+          },
+          null,
+          2,
+        );
+        worker.terminate();
+      }
+    } catch (e) {
+      out.textContent = "FAIL: " + e.message;
+      clearTimeout(timer);
+      worker.terminate();
+    }
+  };
+  worker.postMessage({ type: "init" });
+</script>
