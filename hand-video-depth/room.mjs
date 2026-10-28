@@ -1,0 +1,2 @@
+import * as T from 'three';
+export function createRoom(scene){const room=new T.Group();scene.add(room);const floor=new T.GridHelper(6,30,0x64859c,0x35495c);floor.position.set(0,-.35,-2);room.add(floor);for(const [x,z] of [[-.5,-1.2],[.5,-1.6],[-.8,-2.5]]){const mesh=new T.Mesh(new T.BoxGeometry(.2,.2,.2),new T.MeshStandardMaterial({color:0x49687d}));mesh.position.set(x,-.25,z);room.add(mesh);}return room;}

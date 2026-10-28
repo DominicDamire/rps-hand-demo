@@ -1,0 +1,8 @@
+<!doctype html><meta charset="utf-8"><pre id="result">Loading face tracker...</pre><script type="module">
+import {HeadView} from '../head/HeadView.js';
+const out=document.getElementById('result'),head=new HeadView({interval:30,widths:[384,288,512]}),img=new Image();img.src='../woman_hands.jpg';await img.decode();let frames=0;
+const timer=setInterval(async()=>{const now=performance.now();if(head.failed){out.textContent='FAIL '+head.error;finish();return;}await head.capture(img,now);head.update(now,.03);if(head.completedFrames>=8){out.textContent=JSON.stringify({seen:!!head.pose.latest,frames:head.completedFrames,yaw:head.pose.yaw,pitch:head.pose.pitch,delegate:head.perf.delegate,latency:head.perf.latency});finish();}},40);
+function finish(){clearInterval(timer);clearTimeout(timeout);head.worker.terminate();clearTimeout(head.timer);}
+const timeout=setTimeout(()=>{out.textContent='FAIL timeout';finish();},60000);
+</script>
+

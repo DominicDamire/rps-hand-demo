@@ -1,0 +1,16 @@
+<!doctype html><meta charset="utf-8"><pre id="result">Testing map...</pre>
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.186.0/build/three.module.js"}}</script>
+<script type="module">
+import * as THREE from 'three';import {DustMap} from './map.mjs?v=15';
+const out=document.getElementById('result');
+try{
+const map=new DustMap(new THREE.Scene());await map.load();const p=map.spawn.clone(),start=p.clone();
+map.move(p,0,-1);if(p.distanceTo(start)<.1)throw Error('Cannot leave spawn');
+let stopped=false;
+for(let i=0;i<400;i++){const before=p.clone();map.move(p,0,-.1);if(before.distanceTo(p)<.0001){stopped=true;break;}}
+if(!stopped)throw Error('Did not stop at wall or boundary');
+const floor=map.floor(p.x,p.z,p.y);if(floor===null||Math.abs(p.y-floor-map.eye)>.01)throw Error('Not grounded');
+out.textContent=JSON.stringify({status:'PASS',spawn:start.toArray(),stoppedAt:p.toArray(),meshes:map.meshes.length,grounded:true});
+}catch(e){out.textContent='FAIL '+e.message;}
+</script>
+

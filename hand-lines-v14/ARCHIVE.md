@@ -1,0 +1,1 @@
+Restored from commit 8dbcb6e. Original V14 hand solver, filters and camera transport. Local tracker copy preserves historical tracker code. Shared doll assets are unchanged from that commit. Separate profile storage avoids overwriting current lab settings. Original peer-to-peer phone transport is retained for a faithful comparison; cross-network connectivity is not guaranteed.

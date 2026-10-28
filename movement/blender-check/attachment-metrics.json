@@ -1,0 +1,47 @@
+[
+  {
+    "pose": "open",
+    "max_attachment_shift_mm": 4.540630356817863e-05,
+    "max_scale_error": 0
+  },
+  {
+    "pose": "fist",
+    "max_attachment_shift_mm": 4.540630356817863e-05,
+    "max_scale_error": 5.960464477539063e-08
+  },
+  {
+    "pose": "spread",
+    "max_attachment_shift_mm": 4.540630356817863e-05,
+    "max_scale_error": 5.960464477539063e-08
+  },
+  {
+    "pose": "pinch",
+    "max_attachment_shift_mm": 4.540630356817863e-05,
+    "max_scale_error": 5.960464477539063e-08
+  },
+  {
+    "pose": "single",
+    "max_attachment_shift_mm": 4.540630356817863e-05,
+    "max_scale_error": 5.960464477539063e-08
+  },
+  {
+    "pose": "photo_count5",
+    "max_attachment_shift_mm": 4.540630356817863e-05,
+    "max_scale_error": 5.960464477539063e-08
+  },
+  {
+    "pose": "photo_user_fist",
+    "max_attachment_shift_mm": 4.540630356817863e-05,
+    "max_scale_error": 5.960464477539063e-08
+  },
+  {
+    "pose": "photo_peace",
+    "max_attachment_shift_mm": 4.540630356817863e-05,
+    "max_scale_error": 5.960464477539063e-08
+  },
+  {
+    "pose": "photo_thumbs_up1",
+    "max_attachment_shift_mm": 4.540630356817863e-05,
+    "max_scale_error": 5.960464477539063e-08
+  }
+]
